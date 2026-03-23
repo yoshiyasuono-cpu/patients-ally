@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 export default function Header({ showBack = false, backTo = '/', title }) {
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">
-      <div className="max-w-[430px] mx-auto px-4 py-3 flex items-center gap-3">
+      <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
         {showBack ? (
           <Link to={backTo} className="text-teal-700 p-1 -ml-1">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

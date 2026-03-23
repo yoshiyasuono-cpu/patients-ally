@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { clinics } from '../data/clinics';
+import { clinics, surveyStats } from '../data/clinics_real';
 import Header from '../components/Header';
 import StarRating from '../components/StarRating';
 
-const FILTERS = ['すべて', 'ワイヤー矯正', 'マウスピース矯正', 'セラミック矯正', '小児矯正', 'ホワイトニング'];
-const AREAS = ['すべて', '立川', '国分寺', '八王子', '吉祥寺', '新宿'];
-const BUDGETS = ['指定なし', '〜60万円', '60〜80万円', '80〜100万円', '100万円以上'];
+const FILTERS = ['すべて', 'ワイヤー矯正', 'マウスピース矯正'];
+const AREAS = ['すべて', '銀座', '表参道', '新宿', '池袋', '渋谷', '恵比寿', '外苑前', '南青山', '原宿', '自由が丘', '目黒', '八重洲'];
+const BUDGETS = ['指定なし', '〜80万円', '80〜100万円', '100〜120万円', '120万円以上'];
 
 function formatPrice(price) {
   return (price / 10000).toFixed(0) + '万円';
@@ -27,12 +27,15 @@ export default function ClinicList() {
     const matchArea = area === 'すべて' || c.area === area;
     const matchFilter = filter === 'すべて' || c.treatments.includes(filter);
     const matchBudget = (() => {
-      const minPrice = Math.min(...Object.values(c.prices).map((p) => p.price));
+      // prices が空の場合は条件なし
+      const priceValues = Object.values(c.prices);
+      if (priceValues.length === 0) return budget === '指定なし';
+      const minPrice = Math.min(...priceValues.map((p) => p.price));
       if (budget === '指定なし') return true;
-      if (budget === '〜60万円') return minPrice <= 600000;
-      if (budget === '60〜80万円') return minPrice <= 800000;
+      if (budget === '〜80万円') return minPrice <= 800000;
       if (budget === '80〜100万円') return minPrice <= 1000000;
-      if (budget === '100万円以上') return minPrice >= 1000000;
+      if (budget === '100〜120万円') return minPrice <= 1200000;
+      if (budget === '120万円以上') return minPrice >= 1200000;
       return true;
     })();
     return matchSearch && matchArea && matchFilter && matchBudget;
@@ -43,7 +46,7 @@ export default function ClinicList() {
       <Header />
 
       {/* Hero */}
-      <div className="bg-gradient-to-br from-teal-700 to-teal-900 px-4 pt-6 pb-8 max-w-[430px] mx-auto">
+      <div className="bg-gradient-to-br from-teal-700 to-teal-900 px-4 pt-6 pb-8 w-full">
         <div className="text-white mb-4">
           <h1 className="text-xl font-bold leading-tight mb-1">
             矯正歯科・審美歯科の<br />中立的な比較・相談窓口
@@ -65,6 +68,25 @@ export default function ClinicList() {
           ))}
         </div>
 
+        {/* 調査数値バナー */}
+        <div className="bg-white/10 rounded-xl p-3 mb-4 grid grid-cols-3 gap-2 text-center">
+          <div>
+            <div className="text-white font-bold text-base leading-tight">{surveyStats.totalClinics}院中</div>
+            <div className="text-white font-bold text-lg leading-tight">{surveyStats.priceClear}院</div>
+            <div className="text-teal-200 text-[9px] leading-tight mt-0.5">だけ総額明確</div>
+          </div>
+          <div>
+            <div className="text-white font-bold text-base leading-tight">{surveyStats.totalClinics}院中</div>
+            <div className="text-white font-bold text-lg leading-tight">{surveyStats.riskDisclosed}院</div>
+            <div className="text-teal-200 text-[9px] leading-tight mt-0.5">リスク記載あり</div>
+          </div>
+          <div>
+            <div className="text-white font-bold text-base leading-tight">{surveyStats.totalClinics}院中</div>
+            <div className="text-white font-bold text-lg leading-tight">{surveyStats.highTransparency}院</div>
+            <div className="text-teal-200 text-[9px] leading-tight mt-0.5">透明性評価：高</div>
+          </div>
+        </div>
+
         {/* Search bar */}
         <div className="relative">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -75,23 +97,25 @@ export default function ClinicList() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="クリニック名・エリア・治療方法で検索"
-            className="w-full pl-9 pr-4 py-2.5 rounded-lg text-sm bg-white text-gray-800 placeholder-gray-400 outline-none shadow"
+            className="w-full pl-9 pr-4 rounded-lg text-sm bg-white text-gray-800 placeholder-gray-400 outline-none shadow"
+            style={{ minHeight: '44px' }}
           />
         </div>
       </div>
 
-      <div className="max-w-[430px] mx-auto px-4">
+      <div className="max-w-2xl mx-auto px-4">
         {/* Filter row */}
         <div className="flex gap-2 mt-4 mb-3 overflow-x-auto pb-1 scrollbar-hide">
           {FILTERS.map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`flex-shrink-0 text-xs px-3 py-1.5 rounded-full border transition-all ${
+              className={`flex-shrink-0 text-sm px-4 rounded-full border transition-all flex items-center ${
                 filter === f
                   ? 'bg-teal-700 text-white border-teal-700'
                   : 'bg-white text-gray-600 border-gray-200'
               }`}
+              style={{ minHeight: '44px' }}
             >
               {f}
             </button>
@@ -103,14 +127,16 @@ export default function ClinicList() {
           <select
             value={area}
             onChange={(e) => setArea(e.target.value)}
-            className="flex-1 text-xs border border-gray-200 rounded-lg px-2 py-2 bg-white text-gray-700 outline-none"
+            className="flex-1 text-sm border border-gray-200 rounded-lg px-2 bg-white text-gray-700 outline-none"
+            style={{ minHeight: '44px' }}
           >
             {AREAS.map((a) => <option key={a}>{a}</option>)}
           </select>
           <select
             value={budget}
             onChange={(e) => setBudget(e.target.value)}
-            className="flex-1 text-xs border border-gray-200 rounded-lg px-2 py-2 bg-white text-gray-700 outline-none"
+            className="flex-1 text-sm border border-gray-200 rounded-lg px-2 bg-white text-gray-700 outline-none"
+            style={{ minHeight: '44px' }}
           >
             {BUDGETS.map((b) => <option key={b}>{b}</option>)}
           </select>
@@ -174,13 +200,19 @@ export default function ClinicList() {
 
                       {/* Rating */}
                       <div className="flex items-center gap-1 mb-1">
-                        <StarRating rating={clinic.rating} />
-                        <span className="text-amber-500 font-bold text-xs">{clinic.rating}</span>
-                        <span className="text-gray-400 text-[10px]">（{clinic.reviewCount}件）</span>
+                        {clinic.rating ? (
+                          <>
+                            <StarRating rating={clinic.rating} />
+                            <span className="text-amber-500 font-bold text-xs">{clinic.rating}</span>
+                            <span className="text-gray-400 text-[10px]">（{clinic.reviewCount}件）</span>
+                          </>
+                        ) : (
+                          <span className="text-gray-400 text-[10px]">口コミ未取得</span>
+                        )}
                       </div>
 
                       {/* Description */}
-                      <p className="text-gray-500 text-[10px] leading-relaxed line-clamp-2">
+                      <p className="text-gray-500 text-xs leading-relaxed line-clamp-2">
                         {clinic.description}
                       </p>
                     </div>
@@ -197,14 +229,14 @@ export default function ClinicList() {
 
                   {/* Footer */}
                   <div className="bg-gray-50 px-4 py-2 flex items-center justify-between border-t border-gray-100">
-                    <span className="text-gray-400 text-[10px]">
+                    <span className="text-gray-400 text-xs">
                       <svg className="w-3 h-3 inline mr-0.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
                       {clinic.access}
                     </span>
-                    <span className="text-teal-700 text-xs font-semibold flex items-center gap-0.5">
+                    <span className="text-teal-700 text-sm font-semibold flex items-center gap-0.5">
                       詳細を見る
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -220,7 +252,7 @@ export default function ClinicList() {
 
       {/* Fixed CTA button */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
-        <div className="max-w-[430px] mx-auto p-3">
+        <div className="max-w-2xl mx-auto p-3">
           <Link to="/consult">
             <button className="w-full bg-gradient-to-r from-teal-600 to-teal-700 text-white py-3.5 rounded-xl font-bold text-sm shadow-md flex items-center justify-center gap-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
