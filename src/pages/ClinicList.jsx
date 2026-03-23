@@ -183,22 +183,10 @@ export default function ClinicList() {
                   {/* Clinic header */}
                   <div className="p-3 pb-2 flex gap-3">
                     {/* Thumbnail */}
-                    <div className="flex-shrink-0 relative w-[120px] h-[90px] md:w-[160px] md:h-[120px]">
-                      <img
-                        src={clinic.thumbnailImg}
-                        alt={clinic.name}
-                        className="w-full h-full object-cover rounded-lg"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          e.currentTarget.nextElementSibling.style.display = 'flex';
-                        }}
-                      />
-                      <div
-                        className="absolute inset-0 rounded-lg items-center justify-center text-2xl"
-                        style={{ display: 'none', background: '#e8f4f4' }}
-                      >
-                        🏥
-                      </div>
+                    <div className="flex-shrink-0 relative w-[120px] h-[90px] md:w-[160px] md:h-[120px] bg-teal-50 rounded-lg flex items-center justify-center">
+                      <span className="text-teal-700 font-bold text-2xl">
+                        {clinic.name.charAt(0)}
+                      </span>
                     </div>
 
                     {/* Info */}

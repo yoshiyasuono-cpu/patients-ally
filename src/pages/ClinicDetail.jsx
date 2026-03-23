@@ -134,6 +134,12 @@ export default function ClinicDetail() {
 
       {/* Hero banner */}
       <div className="bg-gradient-to-br from-teal-700 to-teal-900 max-w-4xl mx-auto px-4 py-5">
+        <div className="flex items-start gap-4 mb-3">
+          <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+            <span className="text-white font-bold text-2xl">{clinic.name.charAt(0)}</span>
+          </div>
+          <div className="flex-1" />
+        </div>
         <div className="flex items-start justify-between">
           <div className="flex-1">
             {clinic.badge && (
