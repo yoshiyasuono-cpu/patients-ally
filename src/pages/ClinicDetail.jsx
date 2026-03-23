@@ -38,6 +38,17 @@ const DUMMY_CASES = [
   },
 ];
 
+const DUMMY_IMAGES = [
+  'https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=800&h=300&fit=crop',
+  'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=800&h=300&fit=crop',
+  'https://images.unsplash.com/photo-1588776814546-1ffedac80fc0?w=800&h=300&fit=crop',
+  'https://images.unsplash.com/photo-1598256989800-fe5f95da9787?w=800&h=300&fit=crop',
+  'https://images.unsplash.com/photo-1609840114035-3c981b782dfe?w=800&h=300&fit=crop',
+  'https://images.unsplash.com/photo-1570612861542-284f4c12e75f?w=800&h=300&fit=crop',
+  'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=800&h=300&fit=crop',
+  'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=800&h=300&fit=crop',
+];
+
 const MARKET_AVG = {
   wire: 750000,
   mouthpiece: 950000,
@@ -154,7 +165,16 @@ export default function ClinicDetail() {
       <Header showBack backTo="/" title={clinic.shortName} />
 
       {/* Hero banner */}
-      <div className="bg-gradient-to-br from-teal-700 to-teal-900 max-w-4xl mx-auto px-4 py-5">
+      <div
+        className="max-w-4xl mx-auto px-4 py-5 relative overflow-hidden"
+        style={{
+          backgroundImage: `url(${DUMMY_IMAGES[clinic.id % DUMMY_IMAGES.length] || DUMMY_IMAGES[0]})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div className="absolute inset-0 bg-teal-900/80" />
+        <div className="relative z-10">
         <div className="flex items-start gap-4 mb-3">
           <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
             <span className="text-white font-bold text-2xl">{clinic.name.charAt(0)}</span>
@@ -189,6 +209,7 @@ export default function ClinicDetail() {
           ) : (
             <span className="text-teal-300 text-xs">口コミ未取得</span>
           )}
+        </div>
         </div>
       </div>
 
