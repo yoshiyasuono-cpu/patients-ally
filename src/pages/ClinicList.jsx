@@ -160,7 +160,7 @@ export default function ClinicList() {
                   {/* Clinic header */}
                   <div className="p-3 pb-2 flex gap-3">
                     {/* Thumbnail */}
-                    <div className="flex-shrink-0 relative" style={{ width: 160, height: 120 }}>
+                    <div className="flex-shrink-0 relative w-[120px] h-[90px] md:w-[160px] md:h-[120px]">
                       <img
                         src={clinic.thumbnailImg}
                         alt={clinic.name}
