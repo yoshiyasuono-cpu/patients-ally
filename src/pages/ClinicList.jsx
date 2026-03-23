@@ -103,7 +103,7 @@ export default function ClinicList() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4">
+      <div className="max-w-5xl mx-auto px-4">
         {/* Filter row */}
         <div className="flex gap-2 mt-4 mb-3 overflow-x-auto pb-1 scrollbar-hide">
           {FILTERS.map((f) => (
@@ -148,7 +148,7 @@ export default function ClinicList() {
         </div>
 
         {/* Clinic cards */}
-        <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filtered.length === 0 ? (
             <div className="text-center text-gray-400 py-12 text-sm">
               条件に合うクリニックが見つかりませんでした
@@ -252,7 +252,7 @@ export default function ClinicList() {
 
       {/* Fixed CTA button */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
-        <div className="max-w-2xl mx-auto p-3">
+        <div className="max-w-5xl mx-auto p-3">
           <Link to="/consult">
             <button className="w-full bg-gradient-to-r from-teal-600 to-teal-700 text-white py-3.5 rounded-xl font-bold text-sm shadow-md flex items-center justify-center gap-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
