@@ -165,51 +165,50 @@ export default function ClinicDetail() {
       <Header showBack backTo="/" title={clinic.shortName} />
 
       {/* Hero banner */}
-      <div
-        className="max-w-4xl mx-auto px-4 py-5 relative overflow-hidden"
-        style={{
-          backgroundImage: `url(${DUMMY_IMAGES[clinic.id % DUMMY_IMAGES.length] || DUMMY_IMAGES[0]})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        <div className="absolute inset-0 bg-teal-900/80" />
-        <div className="relative z-10">
-        <div className="flex items-start gap-4 mb-3">
-          <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-bold text-2xl">{clinic.name.charAt(0)}</span>
+      <div className="max-w-4xl mx-auto relative overflow-hidden" style={{ minHeight: '200px' }}>
+        <img
+          src={DUMMY_IMAGES[(clinic.id.charCodeAt(0) || 0) % DUMMY_IMAGES.length]}
+          alt={clinic.name}
+          className="w-full h-full object-cover absolute inset-0"
+          style={{ minHeight: '200px' }}
+        />
+        <div className="absolute inset-0 bg-teal-900/75" />
+        <div className="relative z-10 px-4 py-5">
+          <div className="flex items-start gap-4 mb-3">
+            <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+              <span className="text-white font-bold text-2xl">{clinic.name.charAt(0)}</span>
+            </div>
+            <div className="flex-1" />
           </div>
-          <div className="flex-1" />
-        </div>
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            {clinic.badge && (
-              <span className="inline-flex items-center gap-1 bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full mb-2">
-                <svg className="w-3 h-3 text-teal-300" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                {clinic.badgeText}
-              </span>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              {clinic.badge && (
+                <span className="inline-flex items-center gap-1 bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full mb-2">
+                  <svg className="w-3 h-3 text-teal-300" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  {clinic.badgeText}
+                </span>
+              )}
+              <h1 className="text-white text-xl font-bold leading-tight">{clinic.name}</h1>
+              <p className="text-teal-200 text-sm mt-1">{clinic.director} 院長　{clinic.directorTitle}</p>
+            </div>
+            <div className="text-right flex-shrink-0 ml-3">
+              <div className="text-white font-bold text-lg">{clinic.priceRange}</div>
+              <div className="text-teal-200 text-xs">最低料金目安</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 mt-3">
+            {clinic.rating ? (
+              <>
+                <StarRating rating={clinic.rating} size="md" />
+                <span className="text-amber-300 font-bold text-sm">{clinic.rating}</span>
+                <span className="text-teal-200 text-sm">（{clinic.reviewCount}件の口コミ）</span>
+              </>
+            ) : (
+              <span className="text-teal-300 text-xs">口コミ未取得</span>
             )}
-            <h1 className="text-white text-xl font-bold leading-tight">{clinic.name}</h1>
-            <p className="text-teal-200 text-sm mt-1">{clinic.director} 院長　{clinic.directorTitle}</p>
           </div>
-          <div className="text-right flex-shrink-0 ml-3">
-            <div className="text-white font-bold text-lg">{clinic.priceRange}</div>
-            <div className="text-teal-200 text-xs">最低料金目安</div>
-          </div>
-        </div>
-        <div className="flex items-center gap-1.5 mt-3">
-          {clinic.rating ? (
-            <>
-              <StarRating rating={clinic.rating} size="md" />
-              <span className="text-amber-300 font-bold text-sm">{clinic.rating}</span>
-              <span className="text-teal-200 text-sm">（{clinic.reviewCount}件の口コミ）</span>
-            </>
-          ) : (
-            <span className="text-teal-300 text-xs">口コミ未取得</span>
-          )}
-        </div>
         </div>
       </div>
 
