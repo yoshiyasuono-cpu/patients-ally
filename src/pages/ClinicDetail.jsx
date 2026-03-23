@@ -104,7 +104,7 @@ export default function ClinicDetail() {
     supabase
       .from('clinics')
       .select('*')
-      .eq('id', Number(id))
+      .eq('id', id)
       .single()
       .then(({ data, error }) => {
         if (!error && data) setClinic(mapFromDb(data));
