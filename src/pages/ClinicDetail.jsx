@@ -17,6 +17,27 @@ const CASE_IMG_SETS = {
   3: { before: before3, after: after3 },
 };
 
+const DUMMY_CASES = [
+  {
+    id: 'dummy1',
+    treatment: 'マウスピース矯正',
+    duration: '18ヶ月',
+    before: '叢生（ガタガタ）。前歯のでこぼこが気になっていた。',
+    after: 'インビザラインにて改善。総額95万円（調整料込）。',
+    beforeImg: 'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=400&h=300&fit=crop',
+    afterImg: 'https://images.unsplash.com/photo-1588776814546-1ffedac80fc0?w=400&h=300&fit=crop',
+  },
+  {
+    id: 'dummy2',
+    treatment: 'ワイヤー矯正',
+    duration: '24ヶ月',
+    before: '上顎前突（出っ歯）。口元が気になっていた。',
+    after: '表側ワイヤーにて改善。抜歯あり。総額88万円。',
+    beforeImg: 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=400&h=300&fit=crop',
+    afterImg: 'https://images.unsplash.com/photo-1598256989800-fe5f95da9787?w=400&h=300&fit=crop',
+  },
+];
+
 const MARKET_AVG = {
   wire: 750000,
   mouthpiece: 950000,
@@ -432,49 +453,52 @@ export default function ClinicDetail() {
         </div>
 
         {/* Cases */}
-        {clinic.cases.length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm mt-4 p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-gray-800 font-bold text-sm flex items-center gap-2">
-              <span className="w-4 h-4 bg-teal-700 rounded text-white text-[10px] flex items-center justify-center">◎</span>
-              症例紹介（Before / After）
-            </h2>
-            <span className="text-gray-400 text-[10px]">※デモ用サンプル画像</span>
-          </div>
-          <div className="space-y-5">
-            {clinic.cases.map((c) => (
-              <div key={c.id} className="border border-gray-100 rounded-xl overflow-hidden">
-                {/* Header */}
-                <div className="bg-gray-50 px-3 py-2 flex items-center justify-between">
-                  <TreatmentBadge treatment={c.treatment} />
-                  <span className="text-gray-400 text-[10px]">治療期間: {c.duration}</span>
-                </div>
-
-                {/* Images side by side */}
-                <div className="grid grid-cols-2">
-                  <CaseImage
-                    src={CASE_IMG_SETS[c.caseImgSet].before}
-                    alt="矯正前（Before）"
-                    label="BEFORE"
-                    labelColor="bg-red-500"
-                    overlayColor="bg-black/30"
-                    description={c.before}
-                  />
-                  <CaseImage
-                    src={CASE_IMG_SETS[c.caseImgSet].after}
-                    alt="矯正後（After）"
-                    label="AFTER"
-                    labelColor="bg-teal-600"
-                    overlayColor="bg-teal-900/20"
-                    description={c.after}
-                    borderLeft
-                  />
-                </div>
+        {(() => {
+          const displayCases = clinic.cases.length > 0 ? clinic.cases : DUMMY_CASES;
+          return (
+            <div className="bg-white rounded-xl shadow-sm mt-4 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-gray-800 font-bold text-sm flex items-center gap-2">
+                  <span className="w-4 h-4 bg-teal-700 rounded text-white text-[10px] flex items-center justify-center">◎</span>
+                  症例紹介（Before / After）
+                </h2>
+                <span className="text-gray-400 text-[10px]">※デモ用サンプル画像</span>
               </div>
-            ))}
-          </div>
-        </div>
-        )}
+              <div className="space-y-5">
+                {displayCases.map((c) => (
+                  <div key={c.id} className="border border-gray-100 rounded-xl overflow-hidden">
+                    {/* Header */}
+                    <div className="bg-gray-50 px-3 py-2 flex items-center justify-between">
+                      <TreatmentBadge treatment={c.treatment} />
+                      <span className="text-gray-400 text-[10px]">治療期間: {c.duration}</span>
+                    </div>
+
+                    {/* Images side by side */}
+                    <div className="grid grid-cols-2">
+                      <CaseImage
+                        src={c.beforeImg || (c.caseImgSet && CASE_IMG_SETS[c.caseImgSet]?.before)}
+                        alt="矯正前（Before）"
+                        label="BEFORE"
+                        labelColor="bg-red-500"
+                        overlayColor="bg-black/30"
+                        description={c.before}
+                      />
+                      <CaseImage
+                        src={c.afterImg || (c.caseImgSet && CASE_IMG_SETS[c.caseImgSet]?.after)}
+                        alt="矯正後（After）"
+                        label="AFTER"
+                        labelColor="bg-teal-600"
+                        overlayColor="bg-teal-900/20"
+                        description={c.after}
+                        borderLeft
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         <div className="h-4" />
       </div>
