@@ -6,6 +6,17 @@ import { mapFromDb } from '../lib/seedClinics';
 import Header from '../components/Header';
 import StarRating from '../components/StarRating';
 
+const DUMMY_IMAGES = [
+  'https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=320&h=240&fit=crop',
+  'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=320&h=240&fit=crop',
+  'https://images.unsplash.com/photo-1588776814546-1ffedac80fc0?w=320&h=240&fit=crop',
+  'https://images.unsplash.com/photo-1598256989800-fe5f95da9787?w=320&h=240&fit=crop',
+  'https://images.unsplash.com/photo-1609840114035-3c981b782dfe?w=320&h=240&fit=crop',
+  'https://images.unsplash.com/photo-1570612861542-284f4c12e75f?w=320&h=240&fit=crop',
+  'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=320&h=240&fit=crop',
+  'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=320&h=240&fit=crop',
+];
+
 const FILTERS = ['すべて', 'ワイヤー矯正', 'マウスピース矯正'];
 const AREAS = ['すべて', '銀座', '表参道', '新宿', '池袋', '渋谷', '恵比寿', '外苑前', '南青山', '原宿', '自由が丘', '目黒', '八重洲'];
 const BUDGETS = ['指定なし', '〜80万円', '80〜100万円', '100〜120万円', '120万円以上'];
@@ -183,10 +194,22 @@ export default function ClinicList() {
                   {/* Clinic header */}
                   <div className="p-3 pb-2 flex gap-3">
                     {/* Thumbnail */}
-                    <div className="flex-shrink-0 relative w-[120px] h-[90px] md:w-[160px] md:h-[120px] bg-teal-50 rounded-lg flex items-center justify-center">
-                      <span className="text-teal-700 font-bold text-2xl">
-                        {clinic.name.charAt(0)}
-                      </span>
+                    <div className="flex-shrink-0 relative w-[120px] h-[90px] md:w-[160px] md:h-[120px]">
+                      <img
+                        src={DUMMY_IMAGES[filtered.indexOf(clinic) % DUMMY_IMAGES.length]}
+                        alt={clinic.name}
+                        className="w-full h-full object-cover rounded-lg"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.nextElementSibling.style.display = 'flex';
+                        }}
+                      />
+                      <div
+                        className="absolute inset-0 rounded-lg items-center justify-center bg-teal-50"
+                        style={{ display: 'none' }}
+                      >
+                        <span className="text-teal-700 font-bold text-2xl">{clinic.name.charAt(0)}</span>
+                      </div>
                     </div>
 
                     {/* Info */}
