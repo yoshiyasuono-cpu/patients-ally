@@ -1,5 +1,7 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { clinics } from '../data/clinics_real';
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+import { mapFromDb } from '../lib/seedClinics';
 import Header from '../components/Header';
 import StarRating from '../components/StarRating';
 import before1 from '../assets/cases/before1.jpg';
@@ -95,7 +97,28 @@ function TreatmentBadge({ treatment }) {
 export default function ClinicDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const clinic = clinics.find((c) => c.id === Number(id));
+  const [clinic, setClinic] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase
+      .from('clinics')
+      .select('*')
+      .eq('id', Number(id))
+      .single()
+      .then(({ data, error }) => {
+        if (!error && data) setClinic(mapFromDb(data));
+        setLoading(false);
+      });
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-400 text-sm">読み込み中...</p>
+      </div>
+    );
+  }
 
   if (!clinic) {
     return (
@@ -200,7 +223,7 @@ export default function ClinicDetail() {
                 return (
                   <div key={key} className="border border-gray-100 rounded-xl p-3">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-gray-700 font-semibold text-sm">{val.label}</span>
+                      <span className="text-gray-700 font-semibold text-sm">{val.name || val.label}</span>
                       <span className="text-teal-700 font-bold text-base">{formatPrice(val.price)}</span>
                     </div>
                     {market && (

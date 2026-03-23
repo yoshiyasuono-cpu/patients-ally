@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { clinics, surveyStats } from '../data/clinics_real';
+import { surveyStats } from '../data/clinics_real';
+import { supabase } from '../lib/supabase';
+import { mapFromDb } from '../lib/seedClinics';
 import Header from '../components/Header';
 import StarRating from '../components/StarRating';
 
@@ -13,10 +15,23 @@ function formatPrice(price) {
 }
 
 export default function ClinicList() {
+  const [clinics, setClinics] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [area, setArea] = useState('すべて');
   const [budget, setBudget] = useState('指定なし');
   const [filter, setFilter] = useState('すべて');
+
+  useEffect(() => {
+    supabase
+      .from('clinics')
+      .select('*')
+      .order('id')
+      .then(({ data, error }) => {
+        if (!error && data) setClinics(data.map(mapFromDb));
+        setLoading(false);
+      });
+  }, []);
 
   const filtered = clinics.filter((c) => {
     const matchSearch =
@@ -40,6 +55,14 @@ export default function ClinicList() {
     })();
     return matchSearch && matchArea && matchFilter && matchBudget;
   });
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-400 text-sm">読み込み中...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-28">
