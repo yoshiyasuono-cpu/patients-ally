@@ -99,7 +99,7 @@ export default function ClinicDetail() {
 
   if (!clinic) {
     return (
-      <div className="max-w-2xl mx-auto p-8 text-center text-gray-400">
+      <div className="max-w-4xl mx-auto p-8 text-center text-gray-400">
         クリニックが見つかりません
       </div>
     );
@@ -110,7 +110,7 @@ export default function ClinicDetail() {
       <Header showBack backTo="/" title={clinic.shortName} />
 
       {/* Hero banner */}
-      <div className="bg-gradient-to-br from-teal-700 to-teal-900 max-w-2xl mx-auto px-4 py-5">
+      <div className="bg-gradient-to-br from-teal-700 to-teal-900 max-w-4xl mx-auto px-4 py-5">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             {clinic.badge && (
@@ -142,7 +142,9 @@ export default function ClinicDetail() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4">
+      <div className="max-w-4xl mx-auto px-4">
+
+        <div className="md:grid md:grid-cols-2 md:gap-4">
 
         {/* Basic info */}
         <div className="bg-white rounded-xl shadow-sm mt-4 p-4">
@@ -237,6 +239,8 @@ export default function ClinicDetail() {
             </p>
           </div>
         </div>
+
+        </div>{/* end 2-col grid */}
 
         {/* 料金の透明性（詳細） */}
         <div className="bg-white rounded-xl shadow-sm mt-4 p-4">
@@ -448,7 +452,7 @@ export default function ClinicDetail() {
 
       {/* Fixed CTA */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
-        <div className="max-w-2xl mx-auto p-3 space-y-2">
+        <div className="max-w-4xl mx-auto p-3 space-y-2">
           <button
             onClick={() => navigate(`/consult?clinic=${clinic.id}`)}
             className="w-full bg-gradient-to-r from-teal-600 to-teal-700 text-white py-3.5 rounded-xl font-bold text-sm shadow-md flex items-center justify-center gap-2"

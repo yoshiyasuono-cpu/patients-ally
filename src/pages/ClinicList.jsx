@@ -103,7 +103,7 @@ export default function ClinicList() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4">
+      <div className="w-full max-w-6xl mx-auto px-6">
         {/* Filter row */}
         <div className="flex gap-2 mt-4 mb-3 overflow-x-auto pb-1 scrollbar-hide">
           {FILTERS.map((f) => (
@@ -160,7 +160,7 @@ export default function ClinicList() {
                   {/* Clinic header */}
                   <div className="p-3 pb-2 flex gap-3">
                     {/* Thumbnail */}
-                    <div className="flex-shrink-0 relative" style={{ width: 120, height: 90 }}>
+                    <div className="flex-shrink-0 relative" style={{ width: 160, height: 120 }}>
                       <img
                         src={clinic.thumbnailImg}
                         alt={clinic.name}
@@ -190,7 +190,7 @@ export default function ClinicList() {
                             )}
                             <span className="text-gray-400 text-[10px]">{clinic.area}</span>
                           </div>
-                          <h2 className="text-gray-900 font-bold text-sm leading-tight line-clamp-2">{clinic.name}</h2>
+                          <h2 className="text-gray-900 font-bold text-base leading-tight line-clamp-2">{clinic.name}</h2>
                         </div>
                         <div className="flex-shrink-0 text-right ml-1">
                           <div className="text-teal-700 font-bold text-sm">{clinic.priceRange}</div>
@@ -212,7 +212,7 @@ export default function ClinicList() {
                       </div>
 
                       {/* Description */}
-                      <p className="text-gray-500 text-xs leading-relaxed line-clamp-2">
+                      <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">
                         {clinic.description}
                       </p>
                     </div>
