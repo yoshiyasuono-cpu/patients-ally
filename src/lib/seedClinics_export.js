@@ -5,44 +5,23 @@ import { clinics } from '../data/clinics_real';
 function mapClinic(c) {
   return {
     name: c.name,
-    short_name: c.shortName,
     area: c.area,
-    address: c.address || null,
     access: c.access,
-    hp_url: c.hpUrl || null,
     director: c.director,
     director_title: c.directorTitle,
     board_certified: /認定医|専門医/.test(c.directorTitle || ''),
-    tel: c.tel || null,
+    tel: null,
     hours: c.hours,
     established: c.established,
     description: c.description,
-    thumbnail_img: c.thumbnailImg || null,
-    treatments: c.treatments || [],
-    prices: c.prices || {},
-    price_range: c.priceRange || null,
-    fee_system: c.feeSystem || null,
-    adjustment_fee: c.adjustmentFee || null,
-    retainer_included: c.retainerIncluded || null,
-    dental_loan: c.dentalLoan || null,
-    refund_policy: c.returnGuarantee || null,
-    scanner: c.scanner || null,
-    ct: c.ct || null,
-    ceph: c.ceph || null,
+    itero: /あり/.test(c.scanner || ''),
+    dental_ct: /あり/.test(c.ct || ''),
     web_booking: /あり/.test(c.webBooking || ''),
-    web_booking_detail: c.webBooking || null,
     line_consult: /あり/.test(c.lineConsult || ''),
-    line_consult_detail: c.lineConsult || null,
-    case_photos: c.casePhotos || null,
-    risk_disclosure: c.riskDisclosure || null,
+    refund_policy: c.returnGuarantee,
     transparency_score: c.transparencyScore,
     badge: c.badge,
-    badge_text: c.badgeText || null,
-    rating: c.rating || null,
-    review_count: c.reviewCount || null,
-    reviews: c.reviews || [],
-    cases: c.cases || [],
-    average_satisfaction: c.rating || null,
+    average_satisfaction: c.rating,
     total_cases: c.cases ? c.cases.length : 0,
   };
 }
@@ -52,7 +31,7 @@ export async function seedClinics() {
   const rows = clinics.map(mapClinic);
   const { data, error } = await supabase
     .from('clinics')
-    .upsert(rows, { onConflict: 'name' });
+    .upsert(rows, { onConflict: 'id' });
 
   if (error) throw error;
   return rows.length;

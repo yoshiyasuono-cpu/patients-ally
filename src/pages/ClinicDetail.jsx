@@ -1,4 +1,4 @@
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { mapFromDb } from '../lib/seedClinics';
@@ -63,25 +63,6 @@ function formatPrice(p) {
   return p >= 10000 ? Math.round(p / 10000) + '万円' : p.toLocaleString() + '円';
 }
 
-function PriceDiff({ price, market }) {
-  const diff = market - price;
-  const pct = Math.round((diff / market) * 100);
-  if (diff > 0) {
-    return (
-      <span className="text-teal-600 text-[10px] font-bold bg-teal-50 px-1.5 py-0.5 rounded ml-1">
-        相場より{formatPrice(diff)}お得
-      </span>
-    );
-  } else if (diff < 0) {
-    return (
-      <span className="text-gray-400 text-[10px] bg-gray-100 px-1.5 py-0.5 rounded ml-1">
-        相場より高め
-      </span>
-    );
-  }
-  return <span className="text-gray-400 text-[10px] bg-gray-100 px-1.5 py-0.5 rounded ml-1">相場並み</span>;
-}
-
 const TREATMENT_COLORS = {
   'マウスピース矯正': 'bg-blue-50 text-blue-700 border-blue-200',
   'ワイヤー矯正': 'bg-purple-50 text-purple-700 border-purple-200',
@@ -91,27 +72,57 @@ const TREATMENT_COLORS = {
   'ラミネートベニア': 'bg-rose-50 text-rose-700 border-rose-200',
 };
 
+// 4カテゴリのスコアを算出
+function calcScores(clinic) {
+  // 料金透明性
+  const priceScore =
+    clinic.transparencyScore === '高' ? 5 :
+    clinic.transparencyScore === '中' ? 3 : 1;
+
+  // 設備充実度（scanner/ct/cephのうち「あり」含む数）
+  const equipCount = [clinic.scanner, clinic.ct, clinic.ceph]
+    .filter(v => v && /あり/.test(v)).length;
+  const equipScore = equipCount === 3 ? 5 : equipCount === 2 ? 4 : equipCount === 1 ? 2 : 1;
+
+  // リスク開示
+  const riskScore =
+    clinic.riskDisclosure && /あり/.test(clinic.riskDisclosure) ? 5 :
+    clinic.riskDisclosure && /なし/.test(clinic.riskDisclosure) ? 2 : 1;
+
+  // 口コミ充実
+  const rc = clinic.reviewCount || 0;
+  const reviewScore = rc >= 10 ? 5 : rc >= 5 ? 3 : rc >= 1 ? 2 : 1;
+
+  const overall = Math.round(((priceScore + equipScore + riskScore + reviewScore) / 4) * 10) / 10;
+
+  return { priceScore, equipScore, riskScore, reviewScore, overall };
+}
+
+// ★表示コンポーネント（amber-400）
+function StarScore({ score, max = 5 }) {
+  return (
+    <span className="flex gap-0.5">
+      {Array.from({ length: max }).map((_, i) => (
+        <span key={i} className={i < score ? 'text-amber-400' : 'text-gray-200'}>★</span>
+      ))}
+    </span>
+  );
+}
+
 function CaseImage({ src, alt, label, labelColor, overlayColor, description, borderLeft = false }) {
   return (
     <div
       className={`relative${borderLeft ? ' border-l border-white/40' : ''}`}
       style={{ height: '200px' }}
     >
-      <img
-        src={src}
-        alt={alt}
-        className="w-full h-full object-cover"
-      />
-      {/* 全体オーバーレイ */}
+      <img src={src} alt={alt} className="w-full h-full object-cover" />
       <div className={`absolute inset-0 ${overlayColor} pointer-events-none`} />
-      {/* 下部テキスト帯 */}
       <div
         className="absolute bottom-0 left-0 right-0 px-2 pt-3 pb-2"
         style={{ background: 'rgba(0,0,0,0.70)' }}
       >
         <p className="text-white text-[10px] leading-snug line-clamp-3">{description}</p>
       </div>
-      {/* BEFORE / AFTER バッジ */}
       <span className={`absolute top-2 left-2 ${labelColor} text-white text-[10px] font-black px-2 py-0.5 rounded tracking-widest shadow`}>
         {label}
       </span>
@@ -159,6 +170,8 @@ export default function ClinicDetail() {
       </div>
     );
   }
+
+  const scores = calcScores(clinic);
 
   return (
     <div className="min-h-screen bg-gray-50 pb-32">
@@ -212,204 +225,217 @@ export default function ClinicDetail() {
         </div>
       </div>
 
+      {/* ===== 上ゾーン：クリニック基本情報 ===== */}
       <div className="max-w-4xl mx-auto px-4">
+        <div className="mt-4 bg-gray-100 border-l-4 border-teal-600 px-3 py-2 rounded-r-lg">
+          <p className="text-gray-700 font-bold text-sm">📋 クリニック基本情報</p>
+          <p className="text-gray-500 text-[10px] mt-0.5">
+            ※このセクションの情報はクリニックのHP・公開情報をもとに患者の味方が調査・掲載しています
+          </p>
+        </div>
 
         <div className="md:grid md:grid-cols-2 md:gap-4">
 
-        {/* Basic info */}
-        <div className="bg-white rounded-xl shadow-sm mt-4 p-4">
-          <h2 className="text-gray-800 font-bold text-base mb-4 flex items-center gap-2">
-            <span className="w-4 h-4 bg-teal-700 rounded text-white text-[10px] flex items-center justify-center">i</span>
-            基本情報
-          </h2>
-          <div className="space-y-3 text-sm text-gray-600">
-            <div className="flex gap-3">
-              <span className="text-gray-400 w-16 flex-shrink-0">住所</span>
-              <span>{clinic.address}</span>
+          {/* 基本情報 */}
+          <div className="bg-white rounded-xl shadow-sm mt-4 p-4">
+            <h2 className="text-gray-800 font-bold text-base mb-4 flex items-center gap-2">
+              <span className="w-4 h-4 bg-teal-700 rounded text-white text-[10px] flex items-center justify-center">i</span>
+              基本情報
+            </h2>
+            <div className="space-y-3 text-sm text-gray-600">
+              <div className="flex gap-3">
+                <span className="text-gray-400 w-16 flex-shrink-0">住所</span>
+                <span>{clinic.address}</span>
+              </div>
+              <div className="flex gap-3">
+                <span className="text-gray-400 w-16 flex-shrink-0">アクセス</span>
+                <span>{clinic.access}</span>
+              </div>
+              <div className="flex gap-3">
+                <span className="text-gray-400 w-16 flex-shrink-0">電話</span>
+                <span className="text-teal-700 font-semibold">{clinic.tel}</span>
+              </div>
+              <div className="flex gap-3">
+                <span className="text-gray-400 w-16 flex-shrink-0">診療時間</span>
+                <span className="leading-relaxed">{clinic.hours}</span>
+              </div>
+              <div className="flex gap-3">
+                <span className="text-gray-400 w-16 flex-shrink-0">開業</span>
+                <span>{clinic.established}年</span>
+              </div>
             </div>
-            <div className="flex gap-3">
-              <span className="text-gray-400 w-16 flex-shrink-0">アクセス</span>
-              <span>{clinic.access}</span>
-            </div>
-            <div className="flex gap-3">
-              <span className="text-gray-400 w-16 flex-shrink-0">電話</span>
-              <span className="text-teal-700 font-semibold">{clinic.tel}</span>
-            </div>
-            <div className="flex gap-3">
-              <span className="text-gray-400 w-16 flex-shrink-0">診療時間</span>
-              <span className="leading-relaxed">{clinic.hours}</span>
-            </div>
-            <div className="flex gap-3">
-              <span className="text-gray-400 w-16 flex-shrink-0">開業</span>
-              <span>{clinic.established}年</span>
+            <div className="mt-3 p-3 bg-teal-50 rounded-lg border border-teal-100">
+              <p className="text-teal-800 text-sm leading-relaxed">{clinic.description}</p>
             </div>
           </div>
-          <div className="mt-3 p-3 bg-teal-50 rounded-lg border border-teal-100">
-            <p className="text-teal-800 text-sm leading-relaxed">{clinic.description}</p>
-          </div>
-        </div>
 
-        {/* Price table */}
-        <div className="bg-white rounded-xl shadow-sm mt-4 p-4">
-          <h2 className="text-gray-800 font-bold text-base mb-1 flex items-center gap-2">
-            <span className="w-5 h-5 bg-teal-700 rounded text-white text-xs flex items-center justify-center">¥</span>
-            料金比較表
-          </h2>
-          <p className="text-gray-400 text-xs mb-3">相場は市場平均値</p>
+          {/* 料金比較表 */}
+          <div className="bg-white rounded-xl shadow-sm mt-4 p-4">
+            <h2 className="text-gray-800 font-bold text-base mb-1 flex items-center gap-2">
+              <span className="w-5 h-5 bg-teal-700 rounded text-white text-xs flex items-center justify-center">¥</span>
+              料金比較表
+            </h2>
+            <p className="text-gray-400 text-xs mb-3">相場は市場平均値</p>
 
-          {Object.keys(clinic.prices).length === 0 ? (
-            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 text-center">
-              <p className="text-gray-400 text-sm">このクリニックはHP上に料金を公開していません</p>
-              <p className="text-gray-400 text-xs mt-1">カウンセリング時に必ず総額確認をお勧めします</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {Object.entries(clinic.prices).map(([key, val]) => {
-                const market = MARKET_AVG[key];
-                const diff = market ? market - val.price : null;
-                return (
-                  <div key={key} className="border border-gray-100 rounded-xl p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-gray-700 font-semibold text-sm">{val.name || val.label}</span>
-                      <span className="text-teal-700 font-bold text-base">{formatPrice(val.price)}</span>
-                    </div>
-                    {market && (
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-gray-100 rounded-full h-2">
-                          <div
-                            className={`h-2 rounded-full ${diff > 0 ? 'bg-teal-400' : 'bg-orange-300'}`}
-                            style={{ width: `${Math.min((val.price / market) * 100, 100)}%` }}
-                          />
-                        </div>
-                        {diff > 0 ? (
-                          <span className="text-teal-600 text-xs font-bold bg-teal-50 px-2 py-0.5 rounded-full whitespace-nowrap">
-                            相場より{formatPrice(diff)}お得
-                          </span>
-                        ) : diff < 0 ? (
-                          <span className="text-orange-500 text-xs bg-orange-50 px-2 py-0.5 rounded-full whitespace-nowrap">
-                            相場より高め
-                          </span>
-                        ) : (
-                          <span className="text-gray-400 text-xs bg-gray-100 px-2 py-0.5 rounded-full whitespace-nowrap">
-                            相場並み
-                          </span>
-                        )}
+            {Object.keys(clinic.prices).length === 0 ? (
+              <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 text-center">
+                <p className="text-gray-400 text-sm">このクリニックはHP上に料金を公開していません</p>
+                <p className="text-gray-400 text-xs mt-1">カウンセリング時に必ず総額確認をお勧めします</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {Object.entries(clinic.prices).map(([key, val]) => {
+                  const market = MARKET_AVG[key];
+                  const diff = market ? market - val.price : null;
+                  return (
+                    <div key={key} className="border border-gray-100 rounded-xl p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-700 font-semibold text-sm">{val.name || val.label}</span>
+                        <span className="text-teal-700 font-bold text-base">{formatPrice(val.price)}</span>
                       </div>
-                    )}
-                    {val.note && <p className="text-gray-400 text-xs mt-1.5">{val.note}</p>}
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                      {market && (
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 bg-gray-100 rounded-full h-2">
+                            <div
+                              className={`h-2 rounded-full ${diff > 0 ? 'bg-teal-400' : 'bg-orange-300'}`}
+                              style={{ width: `${Math.min((val.price / market) * 100, 100)}%` }}
+                            />
+                          </div>
+                          {diff > 0 ? (
+                            <span className="text-teal-600 text-xs font-bold bg-teal-50 px-2 py-0.5 rounded-full whitespace-nowrap">
+                              相場より{formatPrice(diff)}お得
+                            </span>
+                          ) : diff < 0 ? (
+                            <span className="text-orange-500 text-xs bg-orange-50 px-2 py-0.5 rounded-full whitespace-nowrap">
+                              相場より高め
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 text-xs bg-gray-100 px-2 py-0.5 rounded-full whitespace-nowrap">
+                              相場並み
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {val.note && <p className="text-gray-400 text-xs mt-1.5">{val.note}</p>}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
-          <div className="mt-3 p-3 bg-amber-50 border border-amber-100 rounded-xl">
-            <p className="text-amber-700 text-xs leading-relaxed">
-              ⚠️ 表示料金は調査時点の情報です。調整料・保定装置代・検査料が別途かかる場合があります。必ずカウンセリングで総額を確認してください。
-            </p>
+            <div className="mt-3 p-3 bg-amber-50 border border-amber-100 rounded-xl">
+              <p className="text-amber-700 text-xs leading-relaxed">
+                ⚠️ 表示料金は調査時点の情報です。調整料・保定装置代・検査料が別途かかる場合があります。必ずカウンセリングで総額を確認してください。
+              </p>
+            </div>
           </div>
-        </div>
 
         </div>{/* end 2-col grid */}
 
-        {/* 料金の透明性（詳細） */}
+        {/* 総合スコア表示 */}
         <div className="bg-white rounded-xl shadow-sm mt-4 p-4">
           <h2 className="text-gray-800 font-bold text-base mb-4 flex items-center gap-2">
-            <span className="w-4 h-4 bg-teal-700 rounded text-white text-[10px] flex items-center justify-center">透</span>
-            料金の透明性（詳細）
+            <span className="w-4 h-4 bg-teal-700 rounded text-white text-[10px] flex items-center justify-center">評</span>
+            患者の味方スコア
           </h2>
-          {/* 透明性スコア */}
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-xs text-gray-500">透明性スコア</span>
-            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-              clinic.transparencyScore === '高'
-                ? 'bg-teal-100 text-teal-700'
-                : clinic.transparencyScore === '中'
-                ? 'bg-yellow-100 text-yellow-700'
-                : 'bg-gray-100 text-gray-500'
-            }`}>
-              {clinic.transparencyScore}
-            </span>
+
+          {/* 総合スコア */}
+          <div className="flex items-center gap-3 mb-4 p-3 bg-amber-50 rounded-xl border border-amber-100">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-amber-500">{scores.overall}</div>
+              <div className="text-amber-400 text-xs mt-0.5">総合</div>
+            </div>
+            <div className="flex-1">
+              <StarScore score={Math.round(scores.overall)} />
+              <p className="text-gray-500 text-[10px] mt-1">料金・設備・リスク開示・口コミの4項目平均</p>
+            </div>
           </div>
-          <div className="space-y-2 text-xs text-gray-600">
+
+          {/* 4カテゴリ */}
+          <div className="space-y-3">
             {[
-              { label: '料金制度', value: clinic.feeSystem },
-              { label: '調整料', value: clinic.adjustmentFee },
-              { label: '保定装置', value: clinic.retainerIncluded },
-              { label: 'デンタルローン', value: clinic.dentalLoan },
-              { label: '後戻り保証', value: clinic.returnGuarantee },
-            ].map(({ label, value }) => (
-              <div key={label} className="flex gap-3">
-                <span className="text-gray-400 w-24 flex-shrink-0">{label}</span>
-                <span>{value || '不明'}</span>
+              { label: '料金透明性', score: scores.priceScore },
+              { label: '設備充実度', score: scores.equipScore },
+              { label: 'リスク開示', score: scores.riskScore },
+              { label: '口コミ充実', score: scores.reviewScore },
+            ].map(({ label, score }) => (
+              <div key={label} className="flex items-center gap-3">
+                <span className="text-gray-500 text-xs w-20 flex-shrink-0">{label}</span>
+                <StarScore score={score} />
+                <span className="text-amber-500 text-xs font-bold">{score}</span>
               </div>
             ))}
           </div>
+
+          {/* バッジ */}
+          <div className="mt-4">
+            {clinic.badge ? (
+              <div className="p-3 bg-teal-50 rounded-lg border border-teal-200">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <svg className="w-4 h-4 text-teal-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-teal-700 text-xs font-bold">第三者評価済クリニック</span>
+                </div>
+                <p className="text-teal-700 text-[10px] leading-relaxed">
+                  料金・リスク記載・設備の透明性が高く、「患者の味方」が紹介できると判断したクリニックです。
+                </p>
+              </div>
+            ) : (
+              <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <p className="text-gray-400 text-[10px] leading-relaxed">
+                  現時点ではHP上の公開情報が不足しているため、第三者評価済バッジの付与条件を満たしていません。
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* 設備・利便性 */}
+        {/* 設備・利便性 アイコングリッド */}
         <div className="bg-white rounded-xl shadow-sm mt-4 p-4">
           <h2 className="text-gray-800 font-bold text-base mb-4 flex items-center gap-2">
             <span className="w-4 h-4 bg-teal-700 rounded text-white text-[10px] flex items-center justify-center">設</span>
             設備・利便性
           </h2>
-          <div className="space-y-2 text-xs text-gray-600">
+          <div className="grid grid-cols-3 gap-2">
             {[
-              { label: '口腔内スキャナー', value: clinic.scanner },
-              { label: '歯科用CT', value: clinic.ct },
-              { label: 'セファロ', value: clinic.ceph },
-              { label: 'Web予約', value: clinic.webBooking },
-              { label: 'LINE相談', value: clinic.lineConsult },
-            ].map(({ label, value }) => (
-              <div key={label} className="flex gap-3">
-                <span className="text-gray-400 w-28 flex-shrink-0">{label}</span>
-                <span className={value && value.startsWith('あり') ? 'text-teal-700 font-medium' : ''}>
-                  {value || '不明'}
-                </span>
-              </div>
-            ))}
+              { icon: '🦷', label: '口腔内スキャナー', value: clinic.scanner },
+              { icon: '📡', label: '歯科用CT',         value: clinic.ct },
+              { icon: '📐', label: 'セファロ',          value: clinic.ceph },
+              { icon: '💻', label: 'Web予約',           value: clinic.webBooking },
+              { icon: '💬', label: 'LINE相談',          value: clinic.lineConsult },
+            ].map(({ icon, label, value }) => {
+              const ok = value && value.startsWith('あり');
+              return (
+                <div
+                  key={label}
+                  className={`flex flex-col items-center justify-center p-2 rounded-xl border text-center ${
+                    ok ? 'border-teal-200 bg-teal-50' : 'border-gray-100 bg-gray-50'
+                  }`}
+                >
+                  <span className="text-xl mb-1">{icon}</span>
+                  <span className={`text-[10px] font-medium mb-1 ${ok ? 'text-teal-700' : 'text-gray-400'}`}>
+                    {label}
+                  </span>
+                  <span className="text-sm">{ok ? '✅' : '❌'}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* コンテンツ品質・患者の味方評価 */}
-        <div className="bg-white rounded-xl shadow-sm mt-4 p-4">
-          <h2 className="text-gray-800 font-bold text-base mb-4 flex items-center gap-2">
-            <span className="w-4 h-4 bg-teal-700 rounded text-white text-[10px] flex items-center justify-center">評</span>
-            患者の味方による評価
-          </h2>
-          <div className="space-y-2 text-xs text-gray-600 mb-3">
-            {[
-              { label: '症例写真', value: clinic.casePhotos },
-              { label: 'リスク開示', value: clinic.riskDisclosure },
-            ].map(({ label, value }) => (
-              <div key={label} className="flex gap-3">
-                <span className="text-gray-400 w-28 flex-shrink-0">{label}</span>
-                <span>{value || '不明'}</span>
-              </div>
-            ))}
-          </div>
-          {clinic.badge ? (
-            <div className="p-3 bg-teal-50 rounded-lg border border-teal-200">
-              <div className="flex items-center gap-1.5 mb-1">
-                <svg className="w-4 h-4 text-teal-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <span className="text-teal-700 text-xs font-bold">第三者評価済クリニック</span>
-              </div>
-              <p className="text-teal-700 text-[10px] leading-relaxed">
-                料金・リスク記載・設備の透明性が高く、「患者の味方」が紹介できると判断したクリニックです。
-              </p>
-            </div>
-          ) : (
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
-              <p className="text-gray-400 text-[10px] leading-relaxed">
-                現時点ではHP上の公開情報が不足しているため、第三者評価済バッジの付与条件を満たしていません。
-              </p>
-            </div>
-          )}
+      </div>{/* end 上ゾーン */}
+
+      {/* ===== 下ゾーン：患者の声 ===== */}
+      <div className="max-w-4xl mx-auto px-4">
+        <div className="mt-6 bg-teal-50 border-l-4 border-teal-600 px-3 py-2 rounded-r-lg">
+          <p className="text-teal-800 font-bold text-sm">💬 患者の声</p>
+          <p className="text-teal-600 text-[10px] mt-0.5">
+            ※口コミ・症例は実際の受診者から収集し、患者の味方が内容を確認した上で掲載しています
+          </p>
         </div>
 
-        {/* Reviews */}
+        {/* 口コミ */}
         <div className="bg-white rounded-xl shadow-sm mt-4 p-4">
           <h2 className="text-gray-800 font-bold text-base mb-4 flex items-center gap-2">
             <span className="w-4 h-4 bg-teal-700 rounded text-white text-[10px] flex items-center justify-center">★</span>
@@ -472,7 +498,7 @@ export default function ClinicDetail() {
           </div>
         </div>
 
-        {/* Cases */}
+        {/* 症例 Before/After */}
         {(() => {
           const displayCases = clinic.cases.length > 0 ? clinic.cases : DUMMY_CASES;
           return (
@@ -487,13 +513,10 @@ export default function ClinicDetail() {
               <div className="space-y-5">
                 {displayCases.map((c) => (
                   <div key={c.id} className="border border-gray-100 rounded-xl overflow-hidden">
-                    {/* Header */}
                     <div className="bg-gray-50 px-3 py-2 flex items-center justify-between">
                       <TreatmentBadge treatment={c.treatment} />
                       <span className="text-gray-400 text-[10px]">治療期間: {c.duration}</span>
                     </div>
-
-                    {/* Images side by side */}
                     <div className="grid grid-cols-2">
                       <CaseImage
                         src={c.beforeImg || (c.caseImgSet && CASE_IMG_SETS[c.caseImgSet]?.before)}
@@ -521,7 +544,7 @@ export default function ClinicDetail() {
         })()}
 
         <div className="h-4" />
-      </div>
+      </div>{/* end 下ゾーン */}
 
       {/* Fixed CTA */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
