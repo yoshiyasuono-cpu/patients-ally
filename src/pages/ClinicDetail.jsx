@@ -225,12 +225,12 @@ export default function ClinicDetail() {
         </div>
       </div>
 
-      {/* ===== 上ゾーン：クリニック基本情報 ===== */}
+      {/* ===== ゾーン1：公式・調査情報 ===== */}
       <div className="max-w-4xl mx-auto px-4">
-        <div className="mt-4 bg-gray-100 border-l-4 border-teal-600 px-3 py-2 rounded-r-lg">
-          <p className="text-gray-700 font-bold text-sm">📋 クリニック基本情報</p>
-          <p className="text-gray-500 text-[10px] mt-0.5">
-            ※このセクションの情報はクリニックのHP・公開情報をもとに患者の味方が調査・掲載しています
+        <div className="mt-4 bg-gray-50 border-l-4 border-gray-400 p-3 mb-4 rounded-lg">
+          <p className="text-gray-700 font-bold text-sm">🔍 公式・調査情報</p>
+          <p className="text-gray-400 text-[10px] mt-0.5">
+            患者の味方がクリニックの公式HPおよび公開情報をもとに調査・掲載しています（2026年3月時点）
           </p>
         </div>
 
@@ -263,9 +263,6 @@ export default function ClinicDetail() {
                 <span className="text-gray-400 w-16 flex-shrink-0">開業</span>
                 <span>{clinic.established}年</span>
               </div>
-            </div>
-            <div className="mt-3 p-3 bg-teal-50 rounded-lg border border-teal-100">
-              <p className="text-teal-800 text-sm leading-relaxed">{clinic.description}</p>
             </div>
           </div>
 
@@ -367,28 +364,6 @@ export default function ClinicDetail() {
             ))}
           </div>
 
-          {/* バッジ */}
-          <div className="mt-4">
-            {clinic.badge ? (
-              <div className="p-3 bg-teal-50 rounded-lg border border-teal-200">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <svg className="w-4 h-4 text-teal-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span className="text-teal-700 text-xs font-bold">第三者評価済クリニック</span>
-                </div>
-                <p className="text-teal-700 text-[10px] leading-relaxed">
-                  料金・リスク記載・設備の透明性が高く、「患者の味方」が紹介できると判断したクリニックです。
-                </p>
-              </div>
-            ) : (
-              <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
-                <p className="text-gray-400 text-[10px] leading-relaxed">
-                  現時点ではHP上の公開情報が不足しているため、第三者評価済バッジの付与条件を満たしていません。
-                </p>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* 設備・利便性 アイコングリッド */}
@@ -424,14 +399,66 @@ export default function ClinicDetail() {
           </div>
         </div>
 
-      </div>{/* end 上ゾーン */}
+      </div>{/* end ゾーン1 */}
 
-      {/* ===== 下ゾーン：患者の声 ===== */}
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="mt-6 bg-teal-50 border-l-4 border-teal-600 px-3 py-2 rounded-r-lg">
+      {/* ===== ゾーン2：クリニック提供情報 ===== */}
+      <div className="max-w-4xl mx-auto px-4 mt-4">
+        <div className="bg-blue-50 border-l-4 border-blue-400 p-3 mb-4 rounded-lg">
+          <p className="text-blue-800 font-bold text-sm">🏥 クリニック提供情報</p>
+          <p className="text-blue-400 text-[10px] mt-0.5">
+            クリニックが登録・提供した情報です。患者の味方は内容の正確性を保証しません
+          </p>
+        </div>
+
+        {clinic.badge ? (
+          <>
+            {/* 患者の味方による評価 */}
+            <div className="bg-white rounded-xl shadow-sm mt-4 p-4">
+              <h2 className="text-gray-800 font-bold text-base mb-3 flex items-center gap-2">
+                <span className="w-4 h-4 bg-teal-700 rounded text-white text-[10px] flex items-center justify-center">評</span>
+                患者の味方による評価
+              </h2>
+              <div className="p-3 bg-teal-50 rounded-lg border border-teal-200">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <svg className="w-4 h-4 text-teal-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-teal-700 text-xs font-bold">第三者評価済クリニック</span>
+                </div>
+                <p className="text-teal-700 text-[10px] leading-relaxed">
+                  料金・リスク記載・設備の透明性が高く、「患者の味方」が紹介できると判断したクリニックです。
+                </p>
+              </div>
+            </div>
+
+            {/* クリニック説明文 */}
+            {clinic.description && (
+              <div className="bg-white rounded-xl shadow-sm mt-4 p-4">
+                <h2 className="text-gray-800 font-bold text-base mb-3 flex items-center gap-2">
+                  <span className="w-4 h-4 bg-blue-500 rounded text-white text-[10px] flex items-center justify-center">文</span>
+                  クリニックからのメッセージ
+                </h2>
+                <p className="text-gray-700 text-sm leading-relaxed">{clinic.description}</p>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="bg-white rounded-xl shadow-sm mt-4 p-6 text-center">
+            <p className="text-gray-500 text-sm mb-2">このクリニックはまだ情報を登録していません。</p>
+            <p className="text-gray-400 text-xs">
+              掲載・登録をご希望のクリニック様は
+              <a href="#" className="text-blue-500 underline ml-1">こちらからお問い合わせください</a>。
+            </p>
+          </div>
+        )}
+      </div>{/* end ゾーン2 */}
+
+      {/* ===== ゾーン3：患者の声 ===== */}
+      <div className="max-w-4xl mx-auto px-4 mt-4">
+        <div className="bg-teal-50 border-l-4 border-teal-500 p-3 mb-4 rounded-lg">
           <p className="text-teal-800 font-bold text-sm">💬 患者の声</p>
           <p className="text-teal-600 text-[10px] mt-0.5">
-            ※口コミ・症例は実際の受診者から収集し、患者の味方が内容を確認した上で掲載しています
+            実際の受診者から収集した口コミ・症例です。クリニックによる編集・削除依頼には応じません
           </p>
         </div>
 
@@ -544,7 +571,7 @@ export default function ClinicDetail() {
         })()}
 
         <div className="h-4" />
-      </div>{/* end 下ゾーン */}
+      </div>{/* end ゾーン3 */}
 
       {/* Fixed CTA */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
