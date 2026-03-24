@@ -24,8 +24,8 @@ const DUMMY_CASES = [
     duration: '18ヶ月',
     before: '叢生（ガタガタ）。前歯のでこぼこが気になっていた。',
     after: 'インビザラインにて改善。総額95万円（調整料込）。',
-    beforeImg: 'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=400&h=300&fit=crop',
-    afterImg: 'https://images.unsplash.com/photo-1588776814546-1ffedac80fc0?w=400&h=300&fit=crop',
+    beforeImg: 'https://images.unsplash.com/photo-1588776814546-1ffedac80fc0?w=400&h=300&fit=crop',
+    afterImg: 'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=400&h=300&fit=crop',
   },
   {
     id: 'dummy2',
@@ -34,19 +34,19 @@ const DUMMY_CASES = [
     before: '上顎前突（出っ歯）。口元が気になっていた。',
     after: '表側ワイヤーにて改善。抜歯あり。総額88万円。',
     beforeImg: 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=400&h=300&fit=crop',
-    afterImg: 'https://images.unsplash.com/photo-1598256989800-fe5f95da9787?w=400&h=300&fit=crop',
+    afterImg: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=400&h=300&fit=crop',
   },
 ];
 
 const DUMMY_IMAGES = [
-  'https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=800&h=300&fit=crop',
+  'https://images.unsplash.com/photo-1629909615184-74f495363b67?w=800&h=300&fit=crop',
   'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=800&h=300&fit=crop',
   'https://images.unsplash.com/photo-1588776814546-1ffedac80fc0?w=800&h=300&fit=crop',
   'https://images.unsplash.com/photo-1598256989800-fe5f95da9787?w=800&h=300&fit=crop',
   'https://images.unsplash.com/photo-1609840114035-3c981b782dfe?w=800&h=300&fit=crop',
-  'https://images.unsplash.com/photo-1570612861542-284f4c12e75f?w=800&h=300&fit=crop',
-  'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=800&h=300&fit=crop',
   'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=800&h=300&fit=crop',
+  'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=800&h=300&fit=crop',
+  'https://images.unsplash.com/photo-1570612861542-284f4c12e75f?w=800&h=300&fit=crop',
 ];
 
 const MARKET_AVG = {
