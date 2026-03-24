@@ -24,8 +24,8 @@ const DUMMY_CASES = [
     duration: '18ヶ月',
     before: '叢生（ガタガタ）。前歯のでこぼこが気になっていた。',
     after: 'インビザラインにて改善。総額95万円（調整料込）。',
-    beforeImg: 'https://images.unsplash.com/photo-1570612861542-284f4c12e75f?w=400&h=300&fit=crop',
-    afterImg: 'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=400&h=300&fit=crop',
+    beforeImg: before1,
+    afterImg: after1,
   },
   {
     id: 'dummy2',
@@ -33,8 +33,17 @@ const DUMMY_CASES = [
     duration: '24ヶ月',
     before: '上顎前突（出っ歯）。口元が気になっていた。',
     after: '表側ワイヤーにて改善。抜歯あり。総額88万円。',
-    beforeImg: 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=400&h=300&fit=crop',
-    afterImg: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=400&h=300&fit=crop',
+    beforeImg: before2,
+    afterImg: after2,
+  },
+  {
+    id: 'dummy3',
+    treatment: 'マウスピース矯正',
+    duration: '12ヶ月',
+    before: '前歯の軽度な乱れが気になっていた。',
+    after: 'マウスピース矯正にて改善。',
+    beforeImg: before3,
+    afterImg: after3,
   },
 ];
 
