@@ -24,7 +24,7 @@ const DUMMY_CASES = [
     duration: '18ヶ月',
     before: '叢生（ガタガタ）。前歯のでこぼこが気になっていた。',
     after: 'インビザラインにて改善。総額95万円（調整料込）。',
-    beforeImg: 'https://images.unsplash.com/photo-1588776814546-1ffedac80fc0?w=400&h=300&fit=crop',
+    beforeImg: 'https://images.unsplash.com/photo-1570612861542-284f4c12e75f?w=400&h=300&fit=crop',
     afterImg: 'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=400&h=300&fit=crop',
   },
   {
