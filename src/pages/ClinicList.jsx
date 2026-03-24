@@ -287,6 +287,12 @@ export default function ClinicList() {
       {/* Fixed CTA button */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
         <div className="max-w-5xl mx-auto p-3">
+          <p className="text-center text-xs text-gray-500 mb-1">
+            どれを選べばいいかわからない方は
+            <a href="https://patient-mikata-zv1e.vercel.app" target="_blank" className="text-teal-700 font-bold underline ml-1">
+              無料コンシェルジュに相談 →
+            </a>
+          </p>
           <Link to="/consult">
             <button className="w-full bg-gradient-to-r from-teal-600 to-teal-700 text-white py-3.5 rounded-xl font-bold text-sm shadow-md flex items-center justify-center gap-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
