@@ -185,14 +185,9 @@ export default function ClinicDetail() {
           className="w-full h-full object-cover absolute inset-0"
           style={{ minHeight: '200px' }}
         />
-        <div className="absolute inset-0 bg-teal-900/75" />
+        <div className="absolute inset-0 bg-teal-900/40" />
         <div className="relative z-10 px-4 py-5">
-          <div className="flex items-start gap-4 mb-3">
-            <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
-              <span className="text-white font-bold text-2xl">{clinic.name.charAt(0)}</span>
-            </div>
-            <div className="flex-1" />
-          </div>
+
           <div className="flex items-start justify-between">
             <div className="flex-1">
               {clinic.badge && (
@@ -203,7 +198,7 @@ export default function ClinicDetail() {
                   {clinic.badgeText}
                 </span>
               )}
-              <h1 className="text-white text-xl font-bold leading-tight">{clinic.name}</h1>
+              <h1 className="text-white text-2xl font-bold leading-tight">{clinic.name}</h1>
               <p className="text-teal-200 text-sm mt-1">{clinic.director} 院長　{clinic.directorTitle}</p>
             </div>
             <div className="text-right flex-shrink-0 ml-3">
