@@ -440,12 +440,12 @@ export default function ClinicDetail() {
       {/* ===== ゾーン2：クリニック提供情報（PR） ===== */}
       <div className="max-w-4xl mx-auto mt-8">
         {/* ラベルバー */}
-        <div className="bg-blue-600 py-3 px-5 flex flex-wrap items-center gap-x-3 gap-y-1">
+        <div className="bg-gray-500 py-3 px-5 flex flex-wrap items-center gap-x-3 gap-y-1">
           <span className="text-white font-bold text-sm">📢 クリニック提供情報（PR）</span>
           <span className="text-white/70 text-xs">クリニックが自ら提供している情報です。患者の味方はこの内容を保証しません。</span>
         </div>
         {/* エリア本体 */}
-        <div className="bg-blue-50 border-l-4 border-blue-300 px-4 pb-6">
+        <div className="bg-gray-50 border-l-4 border-gray-300 px-4 pb-6">
           {clinic.badge ? (
             /* badge=true：クリニック提供コンテンツを表示 */
             <>
