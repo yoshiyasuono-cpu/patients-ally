@@ -437,30 +437,36 @@ export default function ClinicDetail() {
         </div>{/* end エリア本体 */}
       </div>{/* end ゾーン1 */}
 
-      {/* ===== ゾーン2：クリニック提供情報（badge=trueのみ表示） ===== */}
-      {clinic.badge && (
-        <div className="max-w-4xl mx-auto mt-8">
-          {/* ラベルバー */}
-          <div className="bg-blue-600 py-3 px-5 flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span className="text-white font-bold text-sm">📢 クリニック提供情報（PR）</span>
-            <span className="text-white/70 text-xs">クリニックが自ら提供している情報です。患者の味方はこの内容を保証しません。</span>
-          </div>
-          {/* エリア本体 */}
-          <div className="bg-blue-50 border-l-4 border-blue-400 px-4 pb-6">
-
-          {/* クリニック説明文 */}
-          {clinic.description && (
-            <div className="bg-white rounded-xl shadow-sm mt-4 p-4">
-              <h2 className="text-gray-800 font-bold text-base mb-3 flex items-center gap-2">
-                <span className="w-4 h-4 bg-blue-500 rounded text-white text-[10px] flex items-center justify-center">文</span>
-                クリニックからのメッセージ
-              </h2>
-              <p className="text-gray-700 text-sm leading-relaxed">{clinic.description}</p>
-            </div>
-          )}
-          </div>{/* end エリア本体 */}
+      {/* ===== ゾーン2：クリニック提供情報（PR） ===== */}
+      <div className="max-w-4xl mx-auto mt-8">
+        {/* ラベルバー */}
+        <div className="bg-blue-600 py-3 px-5 flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span className="text-white font-bold text-sm">📢 クリニック提供情報（PR）</span>
+          <span className="text-white/70 text-xs">クリニックが自ら提供している情報です。患者の味方はこの内容を保証しません。</span>
         </div>
-      )}{/* end ゾーン2 */}
+        {/* エリア本体 */}
+        <div className="bg-blue-50 border-l-4 border-blue-300 px-4 pb-6">
+          {clinic.badge ? (
+            /* badge=true：クリニック提供コンテンツを表示 */
+            <>
+              {clinic.description && (
+                <div className="bg-white rounded-xl shadow-sm mt-4 p-4">
+                  <h2 className="text-gray-800 font-bold text-base mb-3 flex items-center gap-2">
+                    <span className="w-4 h-4 bg-blue-500 rounded text-white text-[10px] flex items-center justify-center">文</span>
+                    クリニックからのメッセージ
+                  </h2>
+                  <p className="text-gray-700 text-sm leading-relaxed">{clinic.description}</p>
+                </div>
+              )}
+            </>
+          ) : (
+            /* badge=false：未登録メッセージ */
+            <p className="text-gray-400 text-sm italic text-center py-8">
+              このクリニックからのPR情報はまだ登録されていません。
+            </p>
+          )}
+        </div>{/* end エリア本体 */}
+      </div>{/* end ゾーン2 */}
 
       {/* ===== ゾーン3：患者の声 ===== */}
       <div className="max-w-4xl mx-auto mt-8">
