@@ -4,6 +4,9 @@ import { supabase } from '../lib/supabase';
 import { mapFromDb } from '../lib/seedClinics';
 import Header from '../components/Header';
 import StarRating from '../components/StarRating';
+import {
+  RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer,
+} from 'recharts';
 import before1 from '../assets/cases/before1.jpg';
 import after1  from '../assets/cases/after1.png';
 import before2 from '../assets/cases/before2_wire.jpg';
@@ -239,17 +242,26 @@ export default function ClinicDetail() {
 
         // 5軸スコア（clinic.scoreがなければ仮値3）
         const subScores = [
-          { label: '料金の透明性',       score: clinic.score?.price_transparency    ?? 3 },
-          { label: '技術・仕上がり',     score: clinic.score?.skill                 ?? 3 },
-          { label: '説明・ホスピタリティ', score: clinic.score?.hospitality          ?? 3 },
-          { label: 'プロセスの誠実さ',   score: clinic.score?.process_integrity     ?? 3 },
-          { label: '総合満足度',         score: clinic.score?.overall_satisfaction  ?? 3 },
+          { label: '料金の透明性',         score: clinic.score?.price_transparency    ?? 3 },
+          { label: '技術・仕上がり',       score: clinic.score?.skill                 ?? 3 },
+          { label: '説明・ホスピタリティ', score: clinic.score?.hospitality           ?? 3 },
+          { label: 'プロセスの誠実さ',     score: clinic.score?.process_integrity     ?? 3 },
+          { label: '総合満足度',           score: clinic.score?.overall_satisfaction  ?? 3 },
         ];
 
         // 5軸の平均を総合スコアとして使う
         const overallScore = Math.round(
           (subScores.reduce((sum, { score }) => sum + score, 0) / subScores.length) * 10
         ) / 10;
+
+        // レーダーチャート用データ
+        const radarData = [
+          { axis: '料金の透明性',    value: clinic.score?.price_transparency    ?? 0 },
+          { axis: '技術・仕上がり',  value: clinic.score?.skill                 ?? 0 },
+          { axis: '説明・ホスピ\nタリティ', value: clinic.score?.hospitality   ?? 0 },
+          { axis: 'プロセスの\n誠実さ',     value: clinic.score?.process_integrity ?? 0 },
+          { axis: '総合満足度',      value: clinic.score?.overall_satisfaction  ?? 0 },
+        ];
 
         return (
           <div className="max-w-4xl mx-auto px-4 mt-4">
@@ -271,12 +283,31 @@ export default function ClinicDetail() {
                   </p>
                 </div>
 
-                {/* 右：4軸サブスコア ＋ 口コミ */}
+                {/* 中：レーダーチャート */}
+                <div className="flex items-center justify-center flex-shrink-0">
+                  {clinic.score ? (
+                    <RadarChart width={200} height={200} data={radarData}>
+                      <PolarGrid />
+                      <PolarAngleAxis dataKey="axis" tick={{ fontSize: 11 }} />
+                      <PolarRadiusAxis domain={[0, 5]} tick={false} axisLine={false} />
+                      <Radar
+                        dataKey="value"
+                        fill="#0d9488"
+                        fillOpacity={0.3}
+                        stroke="#0d9488"
+                      />
+                    </RadarChart>
+                  ) : (
+                    <p className="text-gray-400 text-xs text-center w-[200px]">口コミ収集中</p>
+                  )}
+                </div>
+
+                {/* 右：5軸サブスコア ＋ 口コミ */}
                 <div className="flex-1">
                   <div className="space-y-2.5">
                     {subScores.map(({ label, score }) => (
                       <div key={label} className="flex items-center gap-2">
-                        <span className="text-gray-500 text-xs w-20 flex-shrink-0">{label}</span>
+                        <span className="text-gray-500 text-xs w-24 flex-shrink-0">{label}</span>
                         <StarScore score={score} />
                         <span className="text-amber-500 text-xs font-bold w-4">{score}</span>
                       </div>
