@@ -228,12 +228,19 @@ export default function ClinicDetail() {
           ? Math.round((clinic.reviews.reduce((s, r) => s + r.rating, 0) / clinic.reviews.length) * 10) / 10
           : null;
 
+        // 5軸スコア（clinic.scoreがなければ仮値3）
         const subScores = [
-          { label: '料金透明性', score: clinic.score?.price_transparency ?? scores.priceScore },
-          { label: '設備充実度', score: clinic.score?.equipment       ?? scores.equipScore },
-          { label: 'リスク開示', score: clinic.score?.risk_disclosure ?? scores.riskScore },
-          { label: '口コミ評価', score: clinic.score?.review_score    ?? scores.reviewScore },
+          { label: '料金の透明性',       score: clinic.score?.price_transparency    ?? 3 },
+          { label: '技術・仕上がり',     score: clinic.score?.skill                 ?? 3 },
+          { label: '説明・ホスピタリティ', score: clinic.score?.hospitality          ?? 3 },
+          { label: 'プロセスの誠実さ',   score: clinic.score?.process_integrity     ?? 3 },
+          { label: '総合満足度',         score: clinic.score?.overall_satisfaction  ?? 3 },
         ];
+
+        // 5軸の平均を総合スコアとして使う
+        const overallScore = Math.round(
+          (subScores.reduce((sum, { score }) => sum + score, 0) / subScores.length) * 10
+        ) / 10;
 
         return (
           <div className="max-w-4xl mx-auto px-4 mt-4">
@@ -246,7 +253,7 @@ export default function ClinicDetail() {
                   <div className="flex items-end gap-1">
                     <span className="text-amber-400 text-3xl leading-none mb-1">★</span>
                     <span style={{ fontSize: '4rem', lineHeight: 1 }} className="font-bold text-teal-600 leading-none">
-                      {scores.overall}
+                      {overallScore}
                     </span>
                     <span className="text-gray-400 text-lg mb-2 ml-0.5">/ 5.0</span>
                   </div>
@@ -392,37 +399,30 @@ export default function ClinicDetail() {
 
         </div>{/* end 2-col grid */}
 
-        {/* 設備・利便性 アイコングリッド */}
-        <div className="bg-white rounded-xl shadow-sm mt-4 p-4">
-          <h2 className="text-gray-800 font-bold text-base mb-4 flex items-center gap-2">
-            <span className="w-4 h-4 bg-teal-700 rounded text-white text-[10px] flex items-center justify-center">設</span>
-            設備・利便性
-          </h2>
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              { icon: '🦷', label: '口腔内スキャナー', value: clinic.scanner },
-              { icon: '📡', label: '歯科用CT',         value: clinic.ct },
-              { icon: '📐', label: 'セファロ',          value: clinic.ceph },
-              { icon: '💻', label: 'Web予約',           value: clinic.webBooking },
-              { icon: '💬', label: 'LINE相談',          value: clinic.lineConsult },
-            ].map(({ icon, label, value }) => {
-              const ok = value && value.startsWith('あり');
-              return (
-                <div
-                  key={label}
-                  className={`flex flex-col items-center justify-center p-2 rounded-xl border text-center ${
-                    ok ? 'border-teal-200 bg-teal-50' : 'border-gray-100 bg-gray-50'
-                  }`}
-                >
-                  <span className="text-xl mb-1">{icon}</span>
-                  <span className={`text-[10px] font-medium mb-1 ${ok ? 'text-teal-700' : 'text-gray-400'}`}>
-                    {label}
-                  </span>
-                  <span className="text-sm">{ok ? '✅' : '❌'}</span>
-                </div>
-              );
-            })}
-          </div>
+        {/* 設備（コンパクトバッジ） */}
+        <div className="bg-white rounded-xl shadow-sm mt-4 px-4 py-3 flex items-center gap-3 flex-wrap">
+          <span className="text-gray-500 text-xs font-bold flex-shrink-0">設備</span>
+          {[
+            { label: '口腔内スキャナー', value: clinic.scanner },
+            { label: '歯科用CT',         value: clinic.ct },
+            { label: 'セファロ',          value: clinic.ceph },
+            { label: 'Web予約',           value: clinic.webBooking },
+            { label: 'LINE相談',          value: clinic.lineConsult },
+          ].map(({ label, value }) => {
+            const ok = value && value.startsWith('あり');
+            return (
+              <span
+                key={label}
+                className={`text-[11px] px-2 py-0.5 rounded-full border ${
+                  ok
+                    ? 'bg-teal-50 text-teal-700 border-teal-200'
+                    : 'bg-gray-50 text-gray-400 border-gray-200 line-through'
+                }`}
+              >
+                {label}{ok ? ' ✓' : ''}
+              </span>
+            );
+          })}
         </div>
 
         </div>{/* end エリア本体 */}
