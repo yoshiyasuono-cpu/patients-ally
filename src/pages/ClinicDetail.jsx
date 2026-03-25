@@ -139,6 +139,15 @@ function CaseImage({ src, alt, label, labelColor, overlayColor, description, bor
   );
 }
 
+// 新旧両フォーマットに対応したレビューレーティング取得
+function getReviewRating(review) {
+  if (review.scores) {
+    const vals = Object.values(review.scores);
+    return Math.round((vals.reduce((s, v) => s + v, 0) / vals.length) * 10) / 10;
+  }
+  return review.rating ?? 0;
+}
+
 function TreatmentBadge({ treatment }) {
   const color = TREATMENT_COLORS[treatment] || 'bg-gray-50 text-gray-600 border-gray-200';
   return (
@@ -223,9 +232,9 @@ export default function ClinicDetail() {
 
       {/* ===== 患者の味方スコア（ヒーロー直下・最上部） ===== */}
       {(() => {
-        // 口コミ平均を算出
+        // 口コミ平均を算出（新旧フォーマット対応）
         const reviewAvg = clinic.reviews.length > 0
-          ? Math.round((clinic.reviews.reduce((s, r) => s + r.rating, 0) / clinic.reviews.length) * 10) / 10
+          ? Math.round((clinic.reviews.reduce((s, r) => s + getReviewRating(r), 0) / clinic.reviews.length) * 10) / 10
           : null;
 
         // 5軸スコア（clinic.scoreがなければ仮値3）
@@ -475,47 +484,60 @@ export default function ClinicDetail() {
             </div>
           ) : (
             <>
-              <div className="flex items-center gap-3 mb-4 p-3 bg-gray-50 rounded-lg">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-gray-800">{clinic.rating}</div>
-                  <StarRating rating={clinic.rating} size="md" />
-                  <div className="text-gray-400 text-[10px] mt-1">{clinic.reviewCount}件</div>
-                </div>
-                <div className="flex-1 space-y-1">
-                  {[5,4,3,2,1].map((s) => {
-                    const count = clinic.reviews.filter(r => r.rating === s).length;
-                    const pct = Math.round((count / clinic.reviews.length) * 100);
-                    return (
-                      <div key={s} className="flex items-center gap-1.5">
-                        <span className="text-[10px] text-gray-500 w-4">{s}</span>
-                        <div className="flex-1 bg-gray-200 rounded-full h-1.5">
-                          <div className="bg-amber-400 h-1.5 rounded-full" style={{ width: `${pct}%` }} />
-                        </div>
-                        <span className="text-[10px] text-gray-400 w-4">{count}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-              <div className="space-y-4">
-                {clinic.reviews.map((review) => (
-                  <div key={review.id} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 bg-teal-100 rounded-full flex items-center justify-center">
-                          <span className="text-teal-700 text-[10px] font-bold">{review.name.slice(0, 1)}</span>
-                        </div>
-                        <div>
-                          <div className="text-gray-700 text-xs font-semibold">{review.name}</div>
-                          <div className="text-gray-400 text-[10px]">{review.date}</div>
-                        </div>
-                      </div>
-                      <StarRating rating={review.rating} />
+              {(() => {
+                // 口コミ平均（新旧フォーマット対応）
+                const avg = Math.round(
+                  (clinic.reviews.reduce((s, r) => s + getReviewRating(r), 0) / clinic.reviews.length) * 10
+                ) / 10;
+                return (
+                  <div className="flex items-center gap-3 mb-4 p-3 bg-gray-50 rounded-lg">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-gray-800">{avg}</div>
+                      <StarRating rating={avg} size="md" />
+                      <div className="text-gray-400 text-[10px] mt-1">{clinic.reviews.length}件</div>
                     </div>
-                    <TreatmentBadge treatment={review.treatment} />
-                    <p className="text-gray-600 text-xs leading-relaxed mt-2">{review.text}</p>
+                    <div className="flex-1 space-y-1">
+                      {[5,4,3,2,1].map((s) => {
+                        const count = clinic.reviews.filter(r => Math.round(getReviewRating(r)) === s).length;
+                        const pct = Math.round((count / clinic.reviews.length) * 100);
+                        return (
+                          <div key={s} className="flex items-center gap-1.5">
+                            <span className="text-[10px] text-gray-500 w-4">{s}</span>
+                            <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                              <div className="bg-amber-400 h-1.5 rounded-full" style={{ width: `${pct}%` }} />
+                            </div>
+                            <span className="text-[10px] text-gray-400 w-4">{count}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                ))}
+                );
+              })()}
+              <div className="space-y-4">
+                {clinic.reviews.map((review) => {
+                  const displayName = review.author || review.name || '匿名';
+                  const displayText = review.comment || review.text || '';
+                  const displayRating = getReviewRating(review);
+                  return (
+                    <div key={review.id} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 bg-teal-100 rounded-full flex items-center justify-center">
+                            <span className="text-teal-700 text-[10px] font-bold">{displayName.slice(0, 1)}</span>
+                          </div>
+                          <div>
+                            <div className="text-gray-700 text-xs font-semibold">{displayName}</div>
+                            <div className="text-gray-400 text-[10px]">{review.date}</div>
+                          </div>
+                        </div>
+                        <StarRating rating={displayRating} />
+                      </div>
+                      <TreatmentBadge treatment={review.treatment} />
+                      <p className="text-gray-600 text-xs leading-relaxed mt-2">{displayText}</p>
+                    </div>
+                  );
+                })}
               </div>
             </>
           )}
