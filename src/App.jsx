@@ -5,6 +5,7 @@ import ClinicDetail from './pages/ClinicDetail';
 import ConsultationForm from './pages/ConsultationForm';
 import ClinicAdmin from './pages/ClinicAdmin';
 import SupabaseTest from './pages/SupabaseTest';
+import ForClinics from './pages/ForClinics';
 import './index.css';
 
 function ScrollToTop() {
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/consult" element={<ConsultationForm />} />
         <Route path="/clinic-admin" element={<ClinicAdmin />} />
         <Route path="/supabase-test" element={<SupabaseTest />} />
+        <Route path="/for-clinics" element={<ForClinics />} />
       </Routes>
     </BrowserRouter>
   );
