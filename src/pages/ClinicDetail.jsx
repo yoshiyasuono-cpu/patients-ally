@@ -447,12 +447,38 @@ export default function ClinicDetail() {
             )}
           </>
         ) : (
-          <div className="bg-white rounded-xl shadow-sm mt-4 p-6 text-center">
-            <p className="text-gray-500 text-sm mb-2">このクリニックはまだ情報を登録していません。</p>
-            <p className="text-gray-400 text-xs">
-              掲載・登録をご希望のクリニック様は
-              <a href="#" className="text-blue-500 underline ml-1">こちらからお問い合わせください</a>。
+          // PR枠登録促進エリア（badge未登録クリニック向け）
+          <div className="bg-teal-50 border border-teal-200 rounded-xl p-6 mt-4">
+            <h3 className="text-teal-800 font-bold text-base mb-2">
+              このクリニックの詳細情報を掲載しませんか？
+            </h3>
+            <p className="text-teal-700 text-sm leading-relaxed mb-4">
+              患者の味方では、クリニック様が自院の情報・症例・医師プロフィールを
+              掲載できる「クリニック発信エリア」をご用意しています。<br />
+              <span className="text-teal-500 text-xs">
+                ※ 患者の味方は掲載内容を保証・推薦するものではありません。
+              </span>
             </p>
+            <div className="space-y-2 mb-5">
+              <div className="flex items-start gap-2 text-sm text-teal-800">
+                <span className="text-teal-400 mt-0.5">●</span>
+                <span>月額PR枠：<span className="font-semibold">1万円/月〜</span>（クリニック情報掲載）</span>
+              </div>
+              <div className="flex items-start gap-2 text-sm text-teal-800">
+                <span className="text-teal-400 mt-0.5">●</span>
+                <span>カウンセリング送客：<span className="font-semibold">5,000円/件</span></span>
+              </div>
+              <div className="flex items-start gap-2 text-sm text-teal-800">
+                <span className="text-teal-400 mt-0.5">●</span>
+                <span>成約成功報酬：<span className="font-semibold">36,000円/件</span>（治療単価の約4%）</span>
+              </div>
+            </div>
+            <a
+              href="mailto:info@kanja-mikata.com"
+              className="inline-block bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-sm transition-colors"
+            >
+              掲載・送客のお問い合わせ
+            </a>
           </div>
         )}
       </div>{/* end ゾーン2 */}
