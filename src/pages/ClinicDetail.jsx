@@ -219,17 +219,34 @@ export default function ClinicDetail() {
               <div className="text-teal-200 text-xs">最低料金目安</div>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 mt-3">
-            {clinic.rating ? (
-              <>
-                <StarRating rating={clinic.rating} size="md" />
-                <span className="text-amber-300 font-bold text-sm">{clinic.rating}</span>
-                <span className="text-teal-200 text-sm">（{clinic.reviewCount}件の口コミ）</span>
-              </>
-            ) : (
-              <span className="text-teal-300 text-xs">口コミ未取得</span>
-            )}
-          </div>
+          {(() => {
+            // reviews配列から実計算（古いrating/reviewCountフィールドは使わない）
+            const reviewCount = clinic.reviews?.length ?? 0;
+            const reviewAvgHero = reviewCount > 0
+              ? Math.round(
+                  clinic.reviews.reduce((sum, r) => {
+                    const vals = Object.values(r.scores ?? {}).filter(v => v != null);
+                    const avg = vals.length > 0
+                      ? vals.reduce((a, b) => a + b, 0) / vals.length
+                      : 0;
+                    return sum + avg;
+                  }, 0) / reviewCount * 10
+                ) / 10
+              : null;
+            return (
+              <div className="flex items-center gap-1.5 mt-3">
+                {reviewAvgHero !== null ? (
+                  <>
+                    <StarRating rating={reviewAvgHero} size="md" />
+                    <span className="text-amber-300 font-bold text-sm">{reviewAvgHero}</span>
+                    <span className="text-teal-200 text-sm">（{reviewCount}件の口コミ）</span>
+                  </>
+                ) : (
+                  <span className="text-teal-300 text-xs">口コミ未取得</span>
+                )}
+              </div>
+            );
+          })()}
         </div>
       </div>
 
@@ -240,28 +257,28 @@ export default function ClinicDetail() {
           ? Math.round((clinic.reviews.reduce((s, r) => s + getReviewRating(r), 0) / clinic.reviews.length) * 10) / 10
           : null;
 
-        // 5軸スコア（clinic.scoreがなければ仮値3）
-        const subScores = [
-          { label: '料金の透明性',         score: clinic.score?.price_transparency    ?? 3 },
-          { label: '技術・仕上がり',       score: clinic.score?.skill                 ?? 3 },
-          { label: '説明・ホスピタリティ', score: clinic.score?.hospitality           ?? 3 },
-          { label: 'プロセスの誠実さ',     score: clinic.score?.process_integrity     ?? 3 },
-          { label: '総合満足度',           score: clinic.score?.overall_satisfaction  ?? 3 },
-        ];
+        const hasScore = clinic.score != null && clinic.score.total != null;
 
-        // 5軸の平均を総合スコアとして使う
-        const overallScore = Math.round(
-          (subScores.reduce((sum, { score }) => sum + score, 0) / subScores.length) * 10
-        ) / 10;
+        // 5軸スコア（clinic.scoreが存在する場合のみ実値を使う）
+        const subScores = hasScore ? [
+          { label: '料金の透明性',         score: clinic.score.price_transparency    ?? 0 },
+          { label: '技術・仕上がり',       score: clinic.score.skill                 ?? 0 },
+          { label: '説明・ホスピタリティ', score: clinic.score.hospitality           ?? 0 },
+          { label: 'プロセスの誠実さ',     score: clinic.score.process_integrity     ?? 0 },
+          { label: '総合満足度',           score: clinic.score.overall_satisfaction  ?? 0 },
+        ] : [];
 
-        // レーダーチャート用データ
-        const radarData = [
-          { axis: '料金の透明性',    value: clinic.score?.price_transparency    ?? 0 },
-          { axis: '技術・仕上がり',  value: clinic.score?.skill                 ?? 0 },
-          { axis: '説明・ホスピ\nタリティ', value: clinic.score?.hospitality   ?? 0 },
-          { axis: 'プロセスの\n誠実さ',     value: clinic.score?.process_integrity ?? 0 },
-          { axis: '総合満足度',      value: clinic.score?.overall_satisfaction  ?? 0 },
-        ];
+        // 総合スコア（scoreがあればtotalを使い、なければ「-」表示用にnull）
+        const overallScore = hasScore ? clinic.score.total : null;
+
+        // レーダーチャート用データ（scoreがある場合のみ）
+        const radarData = hasScore ? [
+          { axis: '料金の透明性',   value: clinic.score.price_transparency    ?? 0 },
+          { axis: '技術・仕上がり', value: clinic.score.skill                 ?? 0 },
+          { axis: '説明・\nホスピタリティ', value: clinic.score.hospitality  ?? 0 },
+          { axis: 'プロセスの\n誠実さ',    value: clinic.score.process_integrity ?? 0 },
+          { axis: '総合満足度',     value: clinic.score.overall_satisfaction  ?? 0 },
+        ] : [];
 
         return (
           <div className="max-w-4xl mx-auto px-4 mt-4">
@@ -271,13 +288,23 @@ export default function ClinicDetail() {
                 {/* 左：総合スコア */}
                 <div className="flex flex-col items-center justify-center md:w-44 flex-shrink-0">
                   <p className="text-gray-400 text-xs mb-1">患者の味方 総合評価</p>
-                  <div className="flex items-end gap-1">
-                    <span className="text-amber-400 text-3xl leading-none mb-1">★</span>
-                    <span style={{ fontSize: '4rem', lineHeight: 1 }} className="font-bold text-teal-600 leading-none">
-                      {overallScore}
-                    </span>
-                    <span className="text-gray-400 text-lg mb-2 ml-0.5">/ 5.0</span>
-                  </div>
+                  {overallScore !== null ? (
+                    <div className="flex items-end gap-1">
+                      <span className="text-amber-400 text-3xl leading-none mb-1">★</span>
+                      <span style={{ fontSize: '4rem', lineHeight: 1 }} className="font-bold text-teal-600 leading-none">
+                        {overallScore}
+                      </span>
+                      <span className="text-gray-400 text-lg mb-2 ml-0.5">/ 5.0</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-end gap-1">
+                      <span className="text-amber-400 text-3xl leading-none mb-1">★</span>
+                      <span style={{ fontSize: '3rem', lineHeight: 1 }} className="font-bold text-gray-300 leading-none">
+                        -
+                      </span>
+                      <span className="text-gray-300 text-lg mb-2 ml-0.5">/ 5.0</span>
+                    </div>
+                  )}
                   <p className="text-gray-400 text-[10px] mt-2 text-center leading-relaxed">
                     患者の味方が独自に算出した評価です
                   </p>
@@ -285,10 +312,19 @@ export default function ClinicDetail() {
 
                 {/* 中：レーダーチャート */}
                 <div className="flex items-center justify-center flex-shrink-0">
-                  {clinic.score ? (
-                    <RadarChart width={200} height={200} data={radarData}>
+                  {hasScore ? (
+                    <RadarChart
+                      width={260}
+                      height={260}
+                      data={radarData}
+                      margin={{ top: 25, right: 35, bottom: 25, left: 35 }}
+                    >
                       <PolarGrid />
-                      <PolarAngleAxis dataKey="axis" tick={{ fontSize: 11 }} />
+                      <PolarAngleAxis
+                        dataKey="axis"
+                        tick={{ fontSize: 10, fill: '#555' }}
+                        tickLine={false}
+                      />
                       <PolarRadiusAxis domain={[0, 5]} tick={false} axisLine={false} />
                       <Radar
                         dataKey="value"
@@ -297,21 +333,23 @@ export default function ClinicDetail() {
                         stroke="#0d9488"
                       />
                     </RadarChart>
-                  ) : (
-                    <p className="text-gray-400 text-xs text-center w-[200px]">口コミ収集中</p>
-                  )}
+                  ) : null}
                 </div>
 
                 {/* 右：5軸サブスコア ＋ 口コミ */}
                 <div className="flex-1">
                   <div className="space-y-2.5">
-                    {subScores.map(({ label, score }) => (
+                    {hasScore ? subScores.map(({ label, score }) => (
                       <div key={label} className="flex items-center gap-2">
                         <span className="text-gray-500 text-xs w-24 flex-shrink-0">{label}</span>
                         <StarScore score={score} />
                         <span className="text-amber-500 text-xs font-bold w-4">{score}</span>
                       </div>
-                    ))}
+                    )) : (
+                      <p className="text-gray-400 text-xs leading-relaxed">
+                        口コミが集まり次第、スコアを算出します
+                      </p>
+                    )}
                   </div>
 
                   {/* 区切り線 ＋ 口コミ平均 */}
