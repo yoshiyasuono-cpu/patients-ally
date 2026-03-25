@@ -284,6 +284,13 @@ export default function ClinicList() {
         </div>
       </div>
 
+      {/* フッター：クリニック向けリンク（目立たせない） */}
+      <div className="w-full text-center py-6 pb-10">
+        <Link to="/for-clinics" className="text-gray-400 text-[10px] hover:text-gray-500 underline">
+          クリニックの掲載について
+        </Link>
+      </div>
+
       {/* Fixed CTA button */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
         <div className="max-w-5xl mx-auto p-3">

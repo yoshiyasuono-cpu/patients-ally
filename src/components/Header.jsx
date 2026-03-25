@@ -25,10 +25,6 @@ export default function Header({ showBack = false, backTo = '/', title }) {
             <span className="text-gray-800 font-semibold text-sm">{title}</span>
           )}
         </Link>
-        {/* クリニック向けナビリンク（ロゴの右端に配置） */}
-        <Link to="/for-clinics" className="text-teal-700 text-xs font-semibold hover:underline whitespace-nowrap">
-          クリニックの方へ
-        </Link>
       </div>
     </header>
   );
