@@ -271,12 +271,12 @@ export default function ClinicDetail() {
         // 総合スコア（scoreがあればtotalを使い、なければ「-」表示用にnull）
         const overallScore = hasScore ? clinic.score.total : null;
 
-        // レーダーチャート用データ（scoreがある場合のみ）
+        // レーダーチャート用データ（scoreがある場合のみ・短縮ラベル）
         const radarData = hasScore ? [
-          { axis: '料金の透明性',   value: clinic.score.price_transparency    ?? 0 },
+          { axis: '料金透明性',     value: clinic.score.price_transparency    ?? 0 },
           { axis: '技術・仕上がり', value: clinic.score.skill                 ?? 0 },
-          { axis: '説明・\nホスピタリティ', value: clinic.score.hospitality  ?? 0 },
-          { axis: 'プロセスの\n誠実さ',    value: clinic.score.process_integrity ?? 0 },
+          { axis: 'ホスピタリティ', value: clinic.score.hospitality           ?? 0 },
+          { axis: 'プロセス誠実さ', value: clinic.score.process_integrity     ?? 0 },
           { axis: '総合満足度',     value: clinic.score.overall_satisfaction  ?? 0 },
         ] : [];
 
@@ -289,52 +289,57 @@ export default function ClinicDetail() {
                 <div className="flex flex-col items-center justify-center md:w-44 flex-shrink-0">
                   <p className="text-gray-400 text-xs mb-1">患者の味方 総合評価</p>
                   {overallScore !== null ? (
-                    <div className="flex items-end gap-1">
-                      <span className="text-amber-400 text-3xl leading-none mb-1">★</span>
-                      <span style={{ fontSize: '4rem', lineHeight: 1 }} className="font-bold text-teal-600 leading-none">
-                        {overallScore}
-                      </span>
-                      <span className="text-gray-400 text-lg mb-2 ml-0.5">/ 5.0</span>
-                    </div>
+                    <>
+                      <div className="flex items-end gap-1">
+                        <span className="text-amber-400 text-3xl leading-none mb-1">★</span>
+                        <span style={{ fontSize: '4rem', lineHeight: 1 }} className="font-bold text-teal-600 leading-none">
+                          {overallScore}
+                        </span>
+                        <span className="text-gray-400 text-lg mb-2 ml-0.5">/ 5.0</span>
+                      </div>
+                      <p className="text-gray-400 text-[10px] mt-2 text-center leading-relaxed">
+                        患者の味方が独自に算出した評価です
+                      </p>
+                    </>
                   ) : (
-                    <div className="flex items-end gap-1">
-                      <span className="text-amber-400 text-3xl leading-none mb-1">★</span>
-                      <span style={{ fontSize: '3rem', lineHeight: 1 }} className="font-bold text-gray-300 leading-none">
-                        -
-                      </span>
-                      <span className="text-gray-300 text-lg mb-2 ml-0.5">/ 5.0</span>
-                    </div>
+                    <p className="text-gray-400 text-sm text-center leading-relaxed mt-2">
+                      口コミが集まり次第、患者の味方スコアを算出します
+                    </p>
                   )}
-                  <p className="text-gray-400 text-[10px] mt-2 text-center leading-relaxed">
-                    患者の味方が独自に算出した評価です
-                  </p>
                 </div>
 
-                {/* 中：レーダーチャート */}
-                <div className="flex items-center justify-center flex-shrink-0">
-                  {hasScore ? (
-                    <RadarChart
-                      width={260}
-                      height={260}
-                      data={radarData}
-                      margin={{ top: 25, right: 35, bottom: 25, left: 35 }}
-                    >
-                      <PolarGrid />
-                      <PolarAngleAxis
-                        dataKey="axis"
-                        tick={{ fontSize: 10, fill: '#555' }}
-                        tickLine={false}
-                      />
-                      <PolarRadiusAxis domain={[0, 5]} tick={false} axisLine={false} />
-                      <Radar
-                        dataKey="value"
-                        fill="#0d9488"
-                        fillOpacity={0.3}
-                        stroke="#0d9488"
-                      />
-                    </RadarChart>
-                  ) : null}
-                </div>
+                {/* 中：レーダーチャート（scoreある場合のみ） */}
+                {hasScore && (() => {
+                  const CustomTick = ({ x, y, payload, textAnchor }) => (
+                    <text x={x} y={y} textAnchor={textAnchor} fill="#555" fontSize={10} dy={4}>
+                      {payload.value}
+                    </text>
+                  );
+                  return (
+                    <div className="flex items-center justify-center flex-shrink-0">
+                      <RadarChart
+                        width={280}
+                        height={280}
+                        data={radarData}
+                        margin={{ top: 30, right: 40, bottom: 30, left: 40 }}
+                      >
+                        <PolarGrid />
+                        <PolarAngleAxis
+                          dataKey="axis"
+                          tick={<CustomTick />}
+                          tickLine={false}
+                        />
+                        <PolarRadiusAxis domain={[0, 5]} tick={false} axisLine={false} />
+                        <Radar
+                          dataKey="value"
+                          fill="#0d9488"
+                          fillOpacity={0.3}
+                          stroke="#0d9488"
+                        />
+                      </RadarChart>
+                    </div>
+                  );
+                })()}
 
                 {/* 右：5軸サブスコア ＋ 口コミ */}
                 <div className="flex-1">
