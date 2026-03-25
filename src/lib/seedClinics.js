@@ -1,8 +1,54 @@
 import { supabase } from './supabase';
 import { clinics } from '../data/clinics_real';
 
+// reviews 配列から患者の味方AIスコアを計算する
+function calcAiScore(reviews) {
+  if (!reviews || reviews.length === 0) return null;
+
+  const axes = [
+    'price_transparency',
+    'skill',
+    'hospitality',
+    'process_integrity',
+    'overall_satisfaction',
+  ];
+
+  // 各軸の平均を計算
+  const axisScores = {};
+  axes.forEach(axis => {
+    const vals = reviews
+      .map(r => r.scores?.[axis])
+      .filter(v => v != null && !isNaN(v));
+    axisScores[axis] = vals.length > 0
+      ? Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10
+      : null;
+  });
+
+  // 重み付き平均（患者の味方独自アルゴリズム）
+  const weights = {
+    price_transparency:   1.3,
+    skill:                1.2,
+    hospitality:          1.0,
+    process_integrity:    1.3,
+    overall_satisfaction: 1.2,
+  };
+
+  const weightedVals = axes
+    .filter(a => axisScores[a] != null)
+    .map(a => ({ score: axisScores[a], weight: weights[a] }));
+
+  if (weightedVals.length === 0) return null;
+
+  const totalWeight = weightedVals.reduce((a, b) => a + b.weight, 0);
+  const weightedSum = weightedVals.reduce((a, b) => a + b.score * b.weight, 0);
+  const total = Math.round((weightedSum / totalWeight) * 10) / 10;
+
+  return { ...axisScores, total };
+}
+
 // clinics_real.js のデータ形式 → Supabase カラム名に変換
 function mapClinic(c) {
+  const aiScore = calcAiScore(c.reviews);
   return {
     name: c.name,
     short_name: c.shortName,
@@ -39,11 +85,12 @@ function mapClinic(c) {
     badge: c.badge,
     badge_text: c.badgeText || null,
     rating: c.rating || null,
-    review_count: c.reviewCount || null,
+    review_count: c.reviews?.length ?? c.reviewCount ?? 0,
     reviews: c.reviews || [],
     cases: c.cases || [],
     average_satisfaction: c.rating || null,
     total_cases: c.cases ? c.cases.length : 0,
+    score: aiScore,
   };
 }
 
@@ -97,5 +144,6 @@ export function mapFromDb(c) {
     cases: c.cases || [],
     address: c.address,
     tel: c.tel,
+    score: c.score || null,
   };
 }
