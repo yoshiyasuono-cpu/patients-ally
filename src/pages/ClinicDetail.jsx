@@ -199,14 +199,6 @@ export default function ClinicDetail() {
 
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              {clinic.badge && (
-                <span className="inline-flex items-center gap-1 bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full mb-2">
-                  <svg className="w-3 h-3 text-teal-300" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  {clinic.badgeText}
-                </span>
-              )}
               <h1 className="text-white text-2xl font-bold leading-tight">{clinic.name}</h1>
               <p className="text-teal-200 text-sm mt-1">{clinic.director} 院長　{clinic.directorTitle}</p>
             </div>
@@ -228,6 +220,72 @@ export default function ClinicDetail() {
           </div>
         </div>
       </div>
+
+      {/* ===== 患者の味方スコア（ヒーロー直下・最上部） ===== */}
+      {(() => {
+        // 口コミ平均を算出
+        const reviewAvg = clinic.reviews.length > 0
+          ? Math.round((clinic.reviews.reduce((s, r) => s + r.rating, 0) / clinic.reviews.length) * 10) / 10
+          : null;
+
+        const subScores = [
+          { label: '料金透明性', score: clinic.score?.price_transparency ?? scores.priceScore },
+          { label: '設備充実度', score: clinic.score?.equipment       ?? scores.equipScore },
+          { label: 'リスク開示', score: clinic.score?.risk_disclosure ?? scores.riskScore },
+          { label: '口コミ評価', score: clinic.score?.review_score    ?? scores.reviewScore },
+        ];
+
+        return (
+          <div className="max-w-4xl mx-auto px-4 mt-4">
+            <div className="bg-white rounded-2xl shadow-md p-6">
+              <div className="flex flex-col md:flex-row gap-6">
+
+                {/* 左：総合スコア */}
+                <div className="flex flex-col items-center justify-center md:w-44 flex-shrink-0">
+                  <p className="text-gray-400 text-xs mb-1">患者の味方 総合評価</p>
+                  <div className="flex items-end gap-1">
+                    <span className="text-amber-400 text-3xl leading-none mb-1">★</span>
+                    <span style={{ fontSize: '4rem', lineHeight: 1 }} className="font-bold text-teal-600 leading-none">
+                      {scores.overall}
+                    </span>
+                    <span className="text-gray-400 text-lg mb-2 ml-0.5">/ 5.0</span>
+                  </div>
+                  <p className="text-gray-400 text-[10px] mt-2 text-center leading-relaxed">
+                    患者の味方が独自に算出した評価です
+                  </p>
+                </div>
+
+                {/* 右：4軸サブスコア ＋ 口コミ */}
+                <div className="flex-1">
+                  <div className="space-y-2.5">
+                    {subScores.map(({ label, score }) => (
+                      <div key={label} className="flex items-center gap-2">
+                        <span className="text-gray-500 text-xs w-20 flex-shrink-0">{label}</span>
+                        <StarScore score={score} />
+                        <span className="text-amber-500 text-xs font-bold w-4">{score}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* 区切り線 ＋ 口コミ平均 */}
+                  <div className="border-t border-gray-100 mt-3 pt-3">
+                    {reviewAvg !== null ? (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-gray-500 text-xs">患者口コミ平均</span>
+                        <StarRating rating={reviewAvg} />
+                        <span className="text-amber-500 text-xs font-bold">{reviewAvg}</span>
+                        <span className="text-gray-400 text-xs">（{clinic.reviews.length}件）</span>
+                      </div>
+                    ) : (
+                      <p className="text-gray-400 text-xs">口コミはまだありません</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ===== ゾーン1：公式・調査情報 ===== */}
       <div className="max-w-4xl mx-auto px-4">
@@ -333,43 +391,6 @@ export default function ClinicDetail() {
 
         </div>{/* end 2-col grid */}
 
-        {/* 総合スコア表示 */}
-        <div className="bg-white rounded-xl shadow-sm mt-4 p-4">
-          <h2 className="text-gray-800 font-bold text-base mb-4 flex items-center gap-2">
-            <span className="w-4 h-4 bg-teal-700 rounded text-white text-[10px] flex items-center justify-center">評</span>
-            患者の味方スコア
-          </h2>
-
-          {/* 総合スコア */}
-          <div className="flex items-center gap-3 mb-4 p-3 bg-amber-50 rounded-xl border border-amber-100">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-amber-500">{scores.overall}</div>
-              <div className="text-amber-400 text-xs mt-0.5">総合</div>
-            </div>
-            <div className="flex-1">
-              <StarScore score={Math.round(scores.overall)} />
-              <p className="text-gray-500 text-[10px] mt-1">料金・設備・リスク開示・口コミの4項目平均</p>
-            </div>
-          </div>
-
-          {/* 4カテゴリ */}
-          <div className="space-y-3">
-            {[
-              { label: '料金透明性', score: scores.priceScore },
-              { label: '設備充実度', score: scores.equipScore },
-              { label: 'リスク開示', score: scores.riskScore },
-              { label: '口コミ充実', score: scores.reviewScore },
-            ].map(({ label, score }) => (
-              <div key={label} className="flex items-center gap-3">
-                <span className="text-gray-500 text-xs w-20 flex-shrink-0">{label}</span>
-                <StarScore score={score} />
-                <span className="text-amber-500 text-xs font-bold">{score}</span>
-              </div>
-            ))}
-          </div>
-
-        </div>
-
         {/* 設備・利便性 アイコングリッド */}
         <div className="bg-white rounded-xl shadow-sm mt-4 p-4">
           <h2 className="text-gray-800 font-bold text-base mb-4 flex items-center gap-2">
@@ -405,51 +426,28 @@ export default function ClinicDetail() {
 
       </div>{/* end ゾーン1 */}
 
-      {/* ===== ゾーン2：クリニック提供情報 ===== */}
-      <div className="max-w-4xl mx-auto px-4 mt-4">
-        <div className="bg-blue-50 border-l-4 border-blue-400 p-3 mb-4 rounded-lg">
-          <p className="text-blue-800 font-bold text-sm">🏥 クリニック提供情報</p>
-          <p className="text-blue-400 text-[10px] mt-0.5">
-            クリニックが登録・提供した情報です。患者の味方は内容の正確性を保証しません
-          </p>
-        </div>
+      {/* ===== ゾーン2：クリニック提供情報（badge=trueのみ表示） ===== */}
+      {clinic.badge && (
+        <div className="max-w-4xl mx-auto px-4 mt-4">
+          <div className="bg-blue-50 border-l-4 border-blue-400 p-3 mb-4 rounded-lg">
+            <p className="text-blue-800 font-bold text-sm">📢 クリニック提供情報（PR）</p>
+            <p className="text-blue-400 text-[10px] mt-0.5">
+              クリニックが自ら提供している情報です。患者の味方はこの内容を保証・推薦するものではありません。
+            </p>
+          </div>
 
-        {clinic.badge ? (
-          <>
-            {/* 患者の味方による評価 */}
+          {/* クリニック説明文 */}
+          {clinic.description && (
             <div className="bg-white rounded-xl shadow-sm mt-4 p-4">
               <h2 className="text-gray-800 font-bold text-base mb-3 flex items-center gap-2">
-                <span className="w-4 h-4 bg-teal-700 rounded text-white text-[10px] flex items-center justify-center">評</span>
-                患者の味方による評価
+                <span className="w-4 h-4 bg-blue-500 rounded text-white text-[10px] flex items-center justify-center">文</span>
+                クリニックからのメッセージ
               </h2>
-              <div className="p-3 bg-teal-50 rounded-lg border border-teal-200">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <svg className="w-4 h-4 text-teal-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span className="text-teal-700 text-xs font-bold">第三者評価済クリニック</span>
-                </div>
-                <p className="text-teal-700 text-[10px] leading-relaxed">
-                  料金・リスク記載・設備の透明性が高く、「患者の味方」が紹介できると判断したクリニックです。
-                </p>
-              </div>
+              <p className="text-gray-700 text-sm leading-relaxed">{clinic.description}</p>
             </div>
-
-            {/* クリニック説明文 */}
-            {clinic.description && (
-              <div className="bg-white rounded-xl shadow-sm mt-4 p-4">
-                <h2 className="text-gray-800 font-bold text-base mb-3 flex items-center gap-2">
-                  <span className="w-4 h-4 bg-blue-500 rounded text-white text-[10px] flex items-center justify-center">文</span>
-                  クリニックからのメッセージ
-                </h2>
-                <p className="text-gray-700 text-sm leading-relaxed">{clinic.description}</p>
-              </div>
-            )}
-          </>
-        ) : (
-          <p className="text-gray-400 text-xs mt-4 text-center">このクリニックはまだ情報を提供していません。</p>
-        )}
-      </div>{/* end ゾーン2 */}
+          )}
+        </div>
+      )}{/* end ゾーン2 */}
 
       {/* ===== ゾーン3：患者の声 ===== */}
       <div className="max-w-4xl mx-auto px-4 mt-4">
