@@ -287,14 +287,15 @@ export default function ClinicDetail() {
         );
       })()}
 
-      {/* ===== ゾーン1：公式・調査情報 ===== */}
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="mt-4 bg-gray-50 border-l-4 border-gray-400 p-3 mb-4 rounded-lg">
-          <p className="text-gray-700 font-bold text-sm">🔍 公式・調査情報</p>
-          <p className="text-gray-400 text-[10px] mt-0.5">
-            患者の味方がクリニックの公式HPおよび公開情報をもとに調査・掲載しています（2026年3月時点）
-          </p>
+      {/* ===== ゾーン1：調査・公式情報 ===== */}
+      <div className="max-w-4xl mx-auto mt-8">
+        {/* ラベルバー */}
+        <div className="bg-gray-700 py-3 px-5 flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span className="text-white font-bold text-sm">🔍 調査・公式情報</span>
+          <span className="text-white/70 text-xs">患者の味方がクリニック公式HPから収集・調査したデータです</span>
         </div>
+        {/* エリア本体 */}
+        <div className="bg-gray-50 border-l-4 border-gray-400 px-4 pb-6">
 
         <div className="md:grid md:grid-cols-2 md:gap-4">
 
@@ -424,17 +425,19 @@ export default function ClinicDetail() {
           </div>
         </div>
 
+        </div>{/* end エリア本体 */}
       </div>{/* end ゾーン1 */}
 
       {/* ===== ゾーン2：クリニック提供情報（badge=trueのみ表示） ===== */}
       {clinic.badge && (
-        <div className="max-w-4xl mx-auto px-4 mt-4">
-          <div className="bg-blue-50 border-l-4 border-blue-400 p-3 mb-4 rounded-lg">
-            <p className="text-blue-800 font-bold text-sm">📢 クリニック提供情報（PR）</p>
-            <p className="text-blue-400 text-[10px] mt-0.5">
-              クリニックが自ら提供している情報です。患者の味方はこの内容を保証・推薦するものではありません。
-            </p>
+        <div className="max-w-4xl mx-auto mt-8">
+          {/* ラベルバー */}
+          <div className="bg-blue-600 py-3 px-5 flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span className="text-white font-bold text-sm">📢 クリニック提供情報（PR）</span>
+            <span className="text-white/70 text-xs">クリニックが自ら提供している情報です。患者の味方はこの内容を保証しません。</span>
           </div>
+          {/* エリア本体 */}
+          <div className="bg-blue-50 border-l-4 border-blue-400 px-4 pb-6">
 
           {/* クリニック説明文 */}
           {clinic.description && (
@@ -446,17 +449,19 @@ export default function ClinicDetail() {
               <p className="text-gray-700 text-sm leading-relaxed">{clinic.description}</p>
             </div>
           )}
+          </div>{/* end エリア本体 */}
         </div>
       )}{/* end ゾーン2 */}
 
       {/* ===== ゾーン3：患者の声 ===== */}
-      <div className="max-w-4xl mx-auto px-4 mt-4">
-        <div className="bg-teal-50 border-l-4 border-teal-500 p-3 mb-4 rounded-lg">
-          <p className="text-teal-800 font-bold text-sm">💬 患者の声</p>
-          <p className="text-teal-600 text-[10px] mt-0.5">
-            実際の受診者から収集した口コミ・症例です。クリニックによる編集・削除依頼には応じません
-          </p>
+      <div className="max-w-4xl mx-auto mt-8">
+        {/* ラベルバー */}
+        <div className="bg-teal-600 py-3 px-5 flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span className="text-white font-bold text-sm">💬 患者の声</span>
+          <span className="text-white/70 text-xs">実際に治療を受けた患者から収集した体験談・口コミです</span>
         </div>
+        {/* エリア本体 */}
+        <div className="bg-teal-50 border-l-4 border-teal-400 px-4 pb-6">
 
         {/* 口コミ */}
         <div className="bg-white rounded-xl shadow-sm mt-4 p-4">
@@ -567,6 +572,7 @@ export default function ClinicDetail() {
         })()}
 
         <div className="h-4" />
+        </div>{/* end エリア本体 */}
       </div>{/* end ゾーン3 */}
 
       {/* Fixed CTA */}
