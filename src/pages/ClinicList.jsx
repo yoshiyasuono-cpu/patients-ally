@@ -92,7 +92,7 @@ export default function ClinicList() {
 
         {/* Trust badges */}
         <div className="flex gap-2 mb-4 flex-wrap">
-          {['第三者評価済クリニックのみ掲載', '料金の透明性を審査', '口コミの改ざん禁止'].map((label) => (
+          {['料金の透明性を審査', '口コミの改ざん禁止'].map((label) => (
             <span key={label} className="bg-white/20 text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1">
               <svg className="w-3 h-3 text-teal-300" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -217,11 +217,7 @@ export default function ClinicList() {
                       <div className="flex items-start justify-between mb-1">
                         <div className="flex-1 min-w-0 pr-1">
                           <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                            {clinic.badge && (
-                              <span className="bg-teal-50 text-teal-700 text-[9px] font-bold px-1.5 py-0.5 rounded border border-teal-200 flex-shrink-0">
-                                ✓ {clinic.badgeText}
-                              </span>
-                            )}
+
                             <span className="text-gray-400 text-[10px]">{clinic.area}</span>
                           </div>
                           <h2 className="text-gray-900 font-bold text-base leading-tight line-clamp-2">{clinic.name}</h2>
