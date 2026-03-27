@@ -304,7 +304,7 @@ export default function ClinicList() {
         <div className="max-w-5xl mx-auto p-3">
           <p className="text-center text-xs text-gray-500 mb-1">
             どれを選べばいいかわからない方は
-            <a href="https://patient-mikata-zv1e.vercel.app" target="_blank" className="text-teal-700 font-bold underline ml-1">
+            <a href="https://patient-mikata-lp.vercel.app" target="_blank" className="text-teal-700 font-bold underline ml-1">
               無料コンシェルジュに相談 →
             </a>
           </p>
