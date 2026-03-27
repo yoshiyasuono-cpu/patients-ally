@@ -145,7 +145,7 @@ export default function ClinicAdmin() {
   const TABS = [
     { id: 'dashboard', label: 'ダッシュボード' },
     { id: 'consultations', label: '相談者一覧' },
-    { id: 'reviews', label: '口コミ管理' },
+    { id: 'reviews', label: '投稿情報管理' },
     { id: 'simulator', label: '紹介料 試算' },
   ];
 
@@ -260,7 +260,7 @@ export default function ClinicAdmin() {
               <h3 className="text-teal-700 font-bold text-sm mb-2">💡 患者の味方 活用Tips</h3>
               <ul className="space-y-1.5">
                 {[
-                  '口コミへの返信は成約率向上に効果的です',
+                  '投稿情報への返信は成約率向上に効果的です',
                   '料金の明朗化がリピーター獲得につながります',
                   '48時間以内の初回連絡で来院率が2倍になります',
                 ].map((tip) => (
@@ -358,7 +358,7 @@ export default function ClinicAdmin() {
           <div className="space-y-4">
             <div className="bg-amber-50 border border-amber-100 rounded-xl p-3">
               <p className="text-amber-700 text-xs leading-relaxed">
-                ⚠️ 口コミの削除・改ざんリクエストには対応しておりません。不正な口コミを発見した場合は運営にご連絡ください。
+                ⚠️ 投稿情報の削除・改ざんリクエストには対応しておりません。不正な投稿情報を発見した場合は運営にご連絡ください。
               </p>
             </div>
 

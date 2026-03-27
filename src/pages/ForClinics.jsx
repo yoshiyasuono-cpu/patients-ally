@@ -1,117 +1,104 @@
 import Header from '../components/Header';
 
-// お問い合わせ先（差し替え時はここだけ変更）
 const CONTACT_EMAIL = 'mailto:info@kanja-mikata.com';
-
-// 収益モデルカードのデータ
-const REVENUE_MODELS = [
-  {
-    type: 'ストック収益',
-    title: '月額PR枠',
-    price: '1万円/月〜',
-    description: 'クリニック発信エリアに自院情報・症例・医師プロフィールを掲載。',
-    note: '※ 患者の味方は掲載内容を保証・推薦するものではありません',
-    color: 'bg-teal-50 border-teal-200',
-    labelColor: 'bg-teal-100 text-teal-700',
-    priceColor: 'text-teal-700',
-  },
-  {
-    type: 'フロー収益A',
-    title: 'カウンセリング送客',
-    price: '5,000円/件',
-    description: '相談・教育済みの患者をカウンセリングに送客。予算確保済み・リスク理解済みの状態で来院。',
-    note: null,
-    color: 'bg-blue-50 border-blue-200',
-    labelColor: 'bg-blue-100 text-blue-700',
-    priceColor: 'text-blue-700',
-  },
-  {
-    type: 'フロー収益B',
-    title: '成約成功報酬',
-    price: '36,000円/件',
-    description: '治療契約成立時のみ発生。平均単価90万円の約4%。Google広告経由より費用対効果が高い。',
-    note: null,
-    color: 'bg-indigo-50 border-indigo-200',
-    labelColor: 'bg-indigo-100 text-indigo-700',
-    priceColor: 'text-indigo-700',
-  },
-];
 
 export default function ForClinics() {
   return (
     <div className="min-h-screen bg-gray-50 pb-16">
-      <Header showBack backTo="/" title="クリニックの方へ" />
+      <Header showBack backTo="/" title="クリニックの皆様へ" />
 
       <div className="max-w-3xl mx-auto px-4 pt-8">
 
         {/* ページタイトル */}
-        <h1 className="text-2xl font-bold text-gray-800 mb-1">
-          クリニック・歯科医の先生へ
+        <h1 className="text-2xl font-bold text-gray-800 mb-3">
+          クリニックの皆様へ
         </h1>
-        <p className="text-gray-500 text-sm mb-8">
-          患者の味方は、矯正患者と誠実なクリニックをつなぐ中立エージェントです。
+        <p className="text-gray-600 text-base leading-relaxed mb-10">
+          患者の味方は、患者さんの矯正歯科選びを支援する情報サービスです。<br />
+          特定の医院を有利にする広告媒体ではなく、<br />
+          比較可能な事実情報を整理して患者さんに届けることを目的としています。
         </p>
 
-        {/* セクション1：患者の味方とは */}
-        <section className="mb-10">
-          <h2 className="text-lg font-bold text-teal-800 mb-4 flex items-center gap-2">
-            <span className="w-5 h-5 bg-teal-700 rounded text-white text-[10px] flex items-center justify-center flex-shrink-0">1</span>
-            患者の味方とは
-          </h2>
-          <div className="bg-white rounded-xl shadow-sm p-5 space-y-3">
-            {[
-              '矯正患者のための中立エージェントサービスです。',
-              '特定のクリニックから広告料を取りません（掲載順位は広告費で変わりません）。',
-              '教育済み・予算確保済みの患者を送客します。',
-            ].map((text, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <span className="w-5 h-5 bg-teal-100 text-teal-700 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
-                  ✓
-                </span>
-                <p className="text-gray-700 text-sm">{text}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+        {/* 3つのカードセクション */}
+        <div className="space-y-6 mb-12">
 
-        {/* セクション2：費用の仕組み */}
-        <section className="mb-10">
-          <h2 className="text-lg font-bold text-teal-800 mb-4 flex items-center gap-2">
-            <span className="w-5 h-5 bg-teal-700 rounded text-white text-[10px] flex items-center justify-center flex-shrink-0">2</span>
-            費用の仕組み（3つの収益モデル）
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {REVENUE_MODELS.map((m) => (
-              <div key={m.title} className={`rounded-xl border p-5 ${m.color}`}>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${m.labelColor} mb-3 inline-block`}>
-                  {m.type}
-                </span>
-                <div className={`text-xl font-bold ${m.priceColor} mb-1`}>{m.price}</div>
-                <div className="text-gray-800 font-semibold text-sm mb-2">{m.title}</div>
-                <p className="text-gray-600 text-xs leading-relaxed">{m.description}</p>
-                {m.note && (
-                  <p className="text-gray-400 text-[10px] mt-2">{m.note}</p>
-                )}
-              </div>
-            ))}
+          {/* 掲載について */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 className="text-lg font-bold text-teal-800 mb-4 flex items-center gap-2">
+              <span className="w-6 h-6 bg-teal-700 rounded text-white text-xs font-bold flex items-center justify-center flex-shrink-0">1</span>
+              掲載について
+            </h2>
+            <ul className="space-y-3">
+              {[
+                '掲載は公開情報をベースに行っています',
+                '掲載順位は広告料や紹介料で変動しません',
+                '情報の訂正・更新のご依頼を歓迎します',
+              ].map((text) => (
+                <li key={text} className="flex items-start gap-3">
+                  <span className="w-5 h-5 bg-teal-100 text-teal-700 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">✓</span>
+                  <p className="text-gray-700 text-base">{text}</p>
+                </li>
+              ))}
+            </ul>
           </div>
-        </section>
 
-        {/* セクション3：お問い合わせ */}
+          {/* 送客について */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 className="text-lg font-bold text-teal-800 mb-4 flex items-center gap-2">
+              <span className="w-6 h-6 bg-teal-700 rounded text-white text-xs font-bold flex items-center justify-center flex-shrink-0">2</span>
+              送客について
+            </h2>
+            <ul className="space-y-3">
+              {[
+                '患者さんからの相談を受け、ご希望に合う医院をご紹介しています',
+                '紹介料は来院時一律で、医院による単価差はありません',
+                '成約の有無で報酬は変わりません',
+              ].map((text) => (
+                <li key={text} className="flex items-start gap-3">
+                  <span className="w-5 h-5 bg-teal-100 text-teal-700 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">✓</span>
+                  <p className="text-gray-700 text-base">{text}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* 矯正比較インテリジェンス */}
+          <div className="bg-blue-50 rounded-2xl border border-blue-100 p-6">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="w-6 h-6 bg-blue-700 rounded text-white text-xs font-bold flex items-center justify-center flex-shrink-0">3</span>
+              <h2 className="text-lg font-bold text-blue-800">
+                矯正比較インテリジェンス
+              </h2>
+            </div>
+            <p className="text-blue-600 text-sm mb-4 ml-8">今後提供予定</p>
+            <ul className="space-y-3">
+              {[
+                '自院の見積もりがエリア内でどう見えているかを可視化するレポート',
+                '患者が何で不安になっているか、比較で決め手になっているかのインサイト',
+                'ご契約クリニック様に提供予定',
+              ].map((text) => (
+                <li key={text} className="flex items-start gap-3">
+                  <span className="w-5 h-5 bg-blue-100 text-blue-700 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">→</span>
+                  <p className="text-gray-700 text-base">{text}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+        </div>
+
+        {/* お問い合わせ */}
         <section>
-          <h2 className="text-lg font-bold text-teal-800 mb-4 flex items-center gap-2">
-            <span className="w-5 h-5 bg-teal-700 rounded text-white text-[10px] flex items-center justify-center flex-shrink-0">3</span>
-            お問い合わせ
-          </h2>
-          <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-            <p className="text-gray-500 text-sm mb-5">
-              まずはヒアリングから。費用は発生しません。
+          <div className="bg-white rounded-2xl shadow-sm p-6 text-center">
+            <h2 className="text-lg font-bold text-gray-800 mb-2">お問い合わせ</h2>
+            <p className="text-gray-500 text-base mb-6">
+              掲載情報の訂正・更新、送客に関するご相談など、お気軽にご連絡ください。
             </p>
             <a
               href={CONTACT_EMAIL}
-              className="inline-block bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm px-6 py-3 rounded-xl shadow-sm transition-colors"
+              className="inline-block bg-teal-600 hover:bg-teal-700 text-white font-bold text-base px-8 py-3 rounded-xl shadow-sm transition-colors"
             >
-              掲載・送客についてお問い合わせ
+              メールでお問い合わせ
             </a>
           </div>
         </section>

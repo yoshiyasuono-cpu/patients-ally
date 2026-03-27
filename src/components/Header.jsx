@@ -25,6 +25,17 @@ export default function Header({ showBack = false, backTo = '/', title }) {
             <span className="text-gray-800 font-semibold text-sm">{title}</span>
           )}
         </Link>
+        {/* ナビリンク（トップページのみ表示） */}
+        {!showBack && (
+          <nav className="flex items-center gap-4">
+            <Link to="/for-clinics" className="text-gray-500 text-sm hover:text-teal-700 transition-colors whitespace-nowrap">
+              クリニックの方へ
+            </Link>
+            <Link to="/policy" className="text-gray-500 text-sm hover:text-teal-700 transition-colors whitespace-nowrap">
+              掲載基準
+            </Link>
+          </nav>
+        )}
       </div>
     </header>
   );

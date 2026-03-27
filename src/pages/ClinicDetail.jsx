@@ -239,10 +239,10 @@ export default function ClinicDetail() {
                   <>
                     <StarRating rating={reviewAvgHero} size="md" />
                     <span className="text-amber-300 font-bold text-sm">{reviewAvgHero}</span>
-                    <span className="text-teal-200 text-sm">（{reviewCount}件の口コミ）</span>
+                    <span className="text-teal-200 text-sm">（{reviewCount}件の投稿情報）</span>
                   </>
                 ) : (
-                  <span className="text-teal-300 text-xs">口コミ未取得</span>
+                  <span className="text-teal-300 text-xs">投稿情報なし</span>
                 )}
               </div>
             );
@@ -265,7 +265,7 @@ export default function ClinicDetail() {
           { label: '技術・仕上がり',       score: clinic.score.skill                 ?? 0 },
           { label: '説明・ホスピタリティ', score: clinic.score.hospitality           ?? 0 },
           { label: 'プロセスの誠実さ',     score: clinic.score.process_integrity     ?? 0 },
-          { label: '総合満足度',           score: clinic.score.overall_satisfaction  ?? 0 },
+          { label: '比較データ',             score: clinic.score.overall_satisfaction  ?? 0 },
         ] : [];
 
         // 総合スコア（scoreがあればtotalを使い、なければ「-」表示用にnull）
@@ -277,7 +277,7 @@ export default function ClinicDetail() {
           { axis: '技術・仕上がり', value: clinic.score.skill                 ?? 0 },
           { axis: 'ホスピタリティ', value: clinic.score.hospitality           ?? 0 },
           { axis: 'プロセス誠実さ', value: clinic.score.process_integrity     ?? 0 },
-          { axis: '総合満足度',     value: clinic.score.overall_satisfaction  ?? 0 },
+          { axis: '比較データ',     value: clinic.score.overall_satisfaction  ?? 0 },
         ] : [];
 
         return (
@@ -303,7 +303,7 @@ export default function ClinicDetail() {
                     </>
                   ) : (
                     <p className="text-gray-400 text-sm text-center leading-relaxed mt-2">
-                      口コミが集まり次第、患者の味方スコアを算出します
+                      投稿情報が集まり次第、患者の味方スコアを算出します
                     </p>
                   )}
                 </div>
@@ -352,7 +352,7 @@ export default function ClinicDetail() {
                       </div>
                     )) : (
                       <p className="text-gray-400 text-xs leading-relaxed">
-                        口コミが集まり次第、スコアを算出します
+                        投稿情報が集まり次第、スコアを算出します
                       </p>
                     )}
                   </div>
@@ -361,13 +361,13 @@ export default function ClinicDetail() {
                   <div className="border-t border-gray-100 mt-3 pt-3">
                     {reviewAvg !== null ? (
                       <div className="flex items-center gap-1.5">
-                        <span className="text-gray-500 text-xs">患者口コミ平均</span>
+                        <span className="text-gray-500 text-xs">患者からの情報平均</span>
                         <StarRating rating={reviewAvg} />
                         <span className="text-amber-500 text-xs font-bold">{reviewAvg}</span>
                         <span className="text-gray-400 text-xs">（{clinic.reviews.length}件）</span>
                       </div>
                     ) : (
-                      <p className="text-gray-400 text-xs">口コミはまだありません</p>
+                      <p className="text-gray-400 text-xs">投稿情報はまだありません</p>
                     )}
                   </div>
                 </div>
@@ -547,7 +547,7 @@ export default function ClinicDetail() {
         {/* ラベルバー */}
         <div className="bg-teal-600 py-3 px-5 flex flex-wrap items-center gap-x-3 gap-y-1">
           <span className="text-white font-bold text-sm">💬 患者の声</span>
-          <span className="text-white/70 text-xs">実際に治療を受けた患者から収集した体験談・口コミです</span>
+          <span className="text-white/70 text-xs">実際に治療を受けた患者から収集した体験談・投稿情報です</span>
         </div>
         {/* エリア本体 */}
         <div className="bg-teal-50 border-l-4 border-teal-400 px-4 pb-6">
@@ -556,11 +556,11 @@ export default function ClinicDetail() {
         <div className="bg-white rounded-xl shadow-sm mt-4 p-4">
           <h2 className="text-gray-800 font-bold text-base mb-4 flex items-center gap-2">
             <span className="w-4 h-4 bg-teal-700 rounded text-white text-[10px] flex items-center justify-center">★</span>
-            患者口コミ（{clinic.reviews.length}件）
+            患者からの情報（{clinic.reviews.length}件）
           </h2>
           {clinic.reviews.length === 0 ? (
             <div className="p-3 bg-gray-50 rounded-lg text-center text-gray-400 text-xs">
-              口コミはまだ収集中です
+              投稿情報を収集中です
             </div>
           ) : (
             <>
@@ -623,7 +623,7 @@ export default function ClinicDetail() {
           )}
           <div className="mt-3 p-2.5 bg-blue-50 rounded-lg border border-blue-100">
             <p className="text-blue-700 text-[10px] leading-relaxed">
-              ✓ 口コミは「患者の味方」が実際の受診者から収集し、内容を確認した上で掲載しています。改ざん・削除依頼には応じません。
+              ✓ 投稿情報は「患者の味方」が実際の受診者から収集し、内容を確認した上で掲載しています。改ざん・削除依頼には応じません。
             </p>
           </div>
         </div>

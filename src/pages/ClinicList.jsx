@@ -82,17 +82,17 @@ export default function ClinicList() {
       {/* Hero */}
       <div className="bg-gradient-to-br from-teal-700 to-teal-900 px-4 pt-6 pb-8 w-full">
         <div className="text-white mb-4">
-          <h1 className="text-xl font-bold leading-tight mb-1">
-            矯正歯科・審美歯科の<br />中立的な比較・相談窓口
+          <h1 className="text-2xl font-bold leading-tight mb-2">
+            矯正する前に、比較する場所。
           </h1>
-          <p className="text-teal-100 text-xs leading-relaxed">
-            クリニックと無関係の第三者として、患者さまの立場で正直にナビゲートします
+          <p className="text-teal-100 text-base leading-relaxed">
+            料金・治療方針・リスク説明——比較に必要な事実情報を、医院ごとに整理してお届けします。
           </p>
         </div>
 
         {/* Trust badges */}
         <div className="flex gap-2 mb-4 flex-wrap">
-          {['料金の透明性を審査', '口コミの改ざん禁止'].map((label) => (
+          {['料金の透明性を審査', '投稿情報の改ざん禁止'].map((label) => (
             <span key={label} className="bg-white/20 text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1">
               <svg className="w-3 h-3 text-teal-300" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -230,14 +230,20 @@ export default function ClinicList() {
 
                       {/* Rating */}
                       <div className="flex items-center gap-1 mb-1">
-                        {clinic.rating ? (
+                        {!clinic.reviewCount || clinic.reviewCount === 0 ? (
+                          <span className="text-gray-400 text-sm">情報収集中</span>
+                        ) : clinic.reviewCount < 3 ? (
+                          <>
+                            <StarRating rating={clinic.rating} />
+                            <span className="text-amber-500 font-bold text-xs">{clinic.rating}</span>
+                            <span className="text-gray-400 text-[10px]">（{clinic.reviewCount}件・参考値）</span>
+                          </>
+                        ) : (
                           <>
                             <StarRating rating={clinic.rating} />
                             <span className="text-amber-500 font-bold text-xs">{clinic.rating}</span>
                             <span className="text-gray-400 text-[10px]">（{clinic.reviewCount}件）</span>
                           </>
-                        ) : (
-                          <span className="text-gray-400 text-[10px]">口コミ未取得</span>
                         )}
                       </div>
 
@@ -280,12 +286,14 @@ export default function ClinicList() {
         </div>
       </div>
 
-      {/* フッター：クリニック向けリンク（目立たせない） */}
-      <div className="w-full text-center py-6 pb-10">
-        <Link to="/for-clinics" className="text-gray-400 text-[10px] hover:text-gray-500 underline">
-          クリニックの掲載について
-        </Link>
-      </div>
+      {/* フッター */}
+      <footer className="w-full text-center py-8 pb-10 border-t border-gray-200 mt-4">
+        <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-4">
+          <Link to="/policy" className="text-gray-400 text-sm hover:text-gray-600">投稿情報掲載基準</Link>
+          <Link to="/for-clinics" className="text-gray-400 text-sm hover:text-gray-600">クリニックの方へ</Link>
+        </div>
+        <p className="text-gray-400 text-xs">© 2026 患者の味方 — 矯正歯科の意思決定支援サービス</p>
+      </footer>
 
       {/* Fixed CTA button */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
