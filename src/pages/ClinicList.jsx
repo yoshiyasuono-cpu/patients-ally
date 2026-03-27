@@ -88,6 +88,10 @@ export default function ClinicList() {
           <p className="text-teal-100 text-base leading-relaxed">
             料金・治療方針・リスク説明——比較に必要な事実情報を、医院ごとに整理してお届けします。
           </p>
+          <div className="inline-flex items-center gap-1.5 mt-3 bg-green-400/20 border border-green-300/40 text-green-200 text-sm font-medium px-4 py-1.5 rounded-full">
+            <span className="text-green-300 font-bold">✓</span>
+            ご利用は完全無料です。相談からクリニック紹介まで、患者様の費用負担はありません。
+          </div>
         </div>
 
         {/* Trust badges */}
