@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { mapFromDb } from '../lib/seedClinics';
@@ -8,18 +8,19 @@ export default function ClinicDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [clinic, setClinic] = useState(null);
+  const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase
-      .from('clinics')
-      .select('*')
-      .eq('id', id)
-      .single()
-      .then(({ data, error }) => {
-        if (!error && data) setClinic(mapFromDb(data));
-        setLoading(false);
-      });
+    // クリニック情報と承認済み口コミを並行取得
+    Promise.all([
+      supabase.from('clinics').select('*').eq('id', id).single(),
+      supabase.from('reviews').select('*').eq('clinic_id', id).eq('status', 'published').order('created_at', { ascending: false }),
+    ]).then(([clinicRes, reviewsRes]) => {
+      if (!clinicRes.error && clinicRes.data) setClinic(mapFromDb(clinicRes.data));
+      if (!reviewsRes.error && reviewsRes.data) setReviews(reviewsRes.data);
+      setLoading(false);
+    });
   }, [id]);
 
   if (loading) {
@@ -163,11 +164,84 @@ export default function ClinicDetail() {
         </div>
       </div>
 
-      {/* 口コミ（今後reviewsテーブルから取得） */}
+      {/* 口コミ */}
       <div className="max-w-4xl mx-auto px-4 mt-4">
-        <div className="bg-white rounded-xl shadow-sm p-4 text-center">
-          <p className="text-gray-400 text-sm">口コミ情報を収集中です</p>
-          <p className="text-gray-400 text-xs mt-1">投稿情報が集まり次第、患者の味方スコアを算出します</p>
+        <div className="bg-white rounded-xl shadow-sm p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-gray-800 font-bold text-base flex items-center gap-2">
+              <span className="w-4 h-4 bg-teal-700 rounded text-white text-[10px] flex items-center justify-center">&#9733;</span>
+              患者の声（{reviews.length}件）
+            </h2>
+            <Link
+              to={`/review?clinic=${id}`}
+              className="text-teal-700 text-xs font-semibold border border-teal-200 px-3 py-1.5 rounded-lg hover:bg-teal-50"
+            >
+              口コミを投稿
+            </Link>
+          </div>
+
+          {reviews.length === 0 ? (
+            <div className="p-4 bg-gray-50 rounded-xl text-center">
+              <p className="text-gray-400 text-sm">口コミ情報を収集中です</p>
+              <p className="text-gray-400 text-xs mt-1">投稿情報が集まり次第、患者の味方スコアを算出します</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {reviews.map((r) => (
+                <div key={r.id} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 bg-teal-100 rounded-full flex items-center justify-center">
+                        <span className="text-teal-700 text-[10px] font-bold">
+                          {(r.nickname || '匿名').slice(0, 1)}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-700 text-xs font-semibold">{r.nickname || '匿名'}</span>
+                        <span className="text-gray-400 text-[10px] ml-2">{r.treatment_type}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* スコアバッジ */}
+                  <div className="flex gap-2 mb-2 flex-wrap">
+                    {r.explanation_clarity && (
+                      <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                        説明 {r.explanation_clarity}/5
+                      </span>
+                    )}
+                    {r.price_transparency && (
+                      <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                        透明性 {r.price_transparency}/5
+                      </span>
+                    )}
+                    {r.pushed_to_sign && (
+                      <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                        契約圧 {r.pushed_to_sign}/5
+                      </span>
+                    )}
+                  </div>
+
+                  {r.comment_good && (
+                    <p className="text-gray-600 text-xs leading-relaxed mb-1">
+                      <span className="text-teal-600 font-bold">良い点：</span>{r.comment_good}
+                    </p>
+                  )}
+                  {r.comment_bad && (
+                    <p className="text-gray-600 text-xs leading-relaxed">
+                      <span className="text-orange-500 font-bold">気になる点：</span>{r.comment_bad}
+                    </p>
+                  )}
+
+                  {r.requested_by_clinic && (
+                    <p className="text-amber-600 text-[10px] mt-2 bg-amber-50 px-2 py-1 rounded inline-block">
+                      クリニックからの依頼による投稿
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
