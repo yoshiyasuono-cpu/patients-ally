@@ -7,6 +7,7 @@ import ClinicAdmin from './pages/ClinicAdmin';
 import SupabaseTest from './pages/SupabaseTest';
 import ForClinics from './pages/ForClinics';
 import Policy from './pages/Policy';
+import Survey from './pages/Survey';
 import './index.css';
 
 function ScrollToTop() {
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/supabase-test" element={<SupabaseTest />} />
         <Route path="/for-clinics" element={<ForClinics />} />
         <Route path="/policy" element={<Policy />} />
+        <Route path="/survey" element={<Survey />} />
       </Routes>
     </BrowserRouter>
   );

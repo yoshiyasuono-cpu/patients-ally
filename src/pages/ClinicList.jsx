@@ -4,17 +4,6 @@ import { supabase } from '../lib/supabase';
 import { mapFromDb } from '../lib/seedClinics';
 import Header from '../components/Header';
 
-const DUMMY_IMAGES = [
-  'https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=320&h=240&fit=crop',
-  'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=320&h=240&fit=crop',
-  'https://images.unsplash.com/photo-1588776814546-1ffedac80fc0?w=320&h=240&fit=crop',
-  'https://images.unsplash.com/photo-1598256989800-fe5f95da9787?w=320&h=240&fit=crop',
-  'https://images.unsplash.com/photo-1609840114035-3c981b782dfe?w=320&h=240&fit=crop',
-  'https://images.unsplash.com/photo-1570612861542-284f4c12e75f?w=320&h=240&fit=crop',
-  'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=320&h=240&fit=crop',
-  'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=320&h=240&fit=crop',
-];
-
 const FILTERS = ['すべて', 'ワイヤー矯正', 'マウスピース矯正'];
 const AREAS = [
   'すべて', '渋谷区', '新宿区', '港区', '中央区', '千代田区', '文京区',
@@ -143,7 +132,7 @@ export default function ClinicList() {
         </div>
       </div>
 
-      <div className="w-full max-w-6xl mx-auto px-6">
+      <div className="w-full max-w-6xl mx-auto px-3 sm:px-6">
         {/* Filter row */}
         <div className="flex gap-2 mt-4 mb-3 overflow-x-auto pb-1 scrollbar-hide">
           {FILTERS.map((f) => (
