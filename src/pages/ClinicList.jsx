@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { surveyStats } from '../data/clinics_real';
 import { supabase } from '../lib/supabase';
 import { mapFromDb } from '../lib/seedClinics';
 import Header from '../components/Header';
-import StarRating from '../components/StarRating';
 
 const DUMMY_IMAGES = [
   'https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=320&h=240&fit=crop',
@@ -18,12 +16,14 @@ const DUMMY_IMAGES = [
 ];
 
 const FILTERS = ['すべて', 'ワイヤー矯正', 'マウスピース矯正'];
-const AREAS = ['すべて', '銀座', '表参道', '新宿', '池袋', '渋谷', '恵比寿', '外苑前', '南青山', '原宿', '自由が丘', '目黒', '八重洲'];
+const AREAS = [
+  'すべて', '渋谷区', '新宿区', '港区', '中央区', '千代田区', '文京区',
+  '世田谷区', '目黒区', '豊島区', '品川区', '大田区', '杉並区', '中野区',
+  '板橋区', '練馬区', '北区', '台東区', '墨田区', '江東区', '葛飾区',
+  '荒川区', '八王子市', '町田市', '立川市', '調布市', '府中市',
+  '武蔵野市', '昭島市', '稲城市', '国分寺市',
+];
 const BUDGETS = ['指定なし', '〜80万円', '80〜100万円', '100〜120万円', '120万円以上'];
-
-function formatPrice(price) {
-  return (price / 10000).toFixed(0) + '万円';
-}
 
 export default function ClinicList() {
   const [clinics, setClinics] = useState([]);
@@ -49,18 +49,19 @@ export default function ClinicList() {
       search === '' ||
       c.name.includes(search) ||
       c.area.includes(search) ||
-      c.treatments.some((t) => t.includes(search));
+      c.station.includes(search);
     const matchArea = area === 'すべて' || c.area === area;
-    const matchFilter = filter === 'すべて' || c.treatments.includes(filter);
+    const matchFilter =
+      filter === 'すべて' ||
+      (filter === 'ワイヤー矯正' && c.wireAvailable) ||
+      (filter === 'マウスピース矯正' && c.invisalignAvailable);
     const matchBudget = (() => {
-      // prices が空の場合は条件なし
-      const priceValues = Object.values(c.prices);
-      if (priceValues.length === 0) return budget === '指定なし';
-      const minPrice = Math.min(...priceValues.map((p) => p.price));
       if (budget === '指定なし') return true;
+      const minPrice = c.feeMin;
+      if (!minPrice) return budget === '指定なし';
       if (budget === '〜80万円') return minPrice <= 800000;
-      if (budget === '80〜100万円') return minPrice <= 1000000;
-      if (budget === '100〜120万円') return minPrice <= 1200000;
+      if (budget === '80〜100万円') return minPrice >= 800000 && minPrice <= 1000000;
+      if (budget === '100〜120万円') return minPrice >= 1000000 && minPrice <= 1200000;
       if (budget === '120万円以上') return minPrice >= 1200000;
       return true;
     })();
@@ -109,19 +110,20 @@ export default function ClinicList() {
         {/* 調査数値バナー */}
         <div className="bg-white/10 rounded-xl p-3 mb-4 grid grid-cols-3 gap-2 text-center">
           <div>
-            <div className="text-white font-bold text-base leading-tight">{surveyStats.totalClinics}院中</div>
-            <div className="text-white font-bold text-lg leading-tight">{surveyStats.priceClear}院</div>
-            <div className="text-teal-200 text-[9px] leading-tight mt-0.5">だけ総額明確</div>
+            <div className="text-white font-bold text-lg leading-tight">{clinics.length}院</div>
+            <div className="text-teal-200 text-[9px] leading-tight mt-0.5">掲載クリニック数</div>
           </div>
           <div>
-            <div className="text-white font-bold text-base leading-tight">{surveyStats.totalClinics}院中</div>
-            <div className="text-white font-bold text-lg leading-tight">{surveyStats.riskDisclosed}院</div>
-            <div className="text-teal-200 text-[9px] leading-tight mt-0.5">リスク記載あり</div>
+            <div className="text-white font-bold text-lg leading-tight">
+              {clinics.filter(c => c.feeMin || c.feeMax).length}院
+            </div>
+            <div className="text-teal-200 text-[9px] leading-tight mt-0.5">料金情報あり</div>
           </div>
           <div>
-            <div className="text-white font-bold text-base leading-tight">{surveyStats.totalClinics}院中</div>
-            <div className="text-white font-bold text-lg leading-tight">{surveyStats.highTransparency}院</div>
-            <div className="text-teal-200 text-[9px] leading-tight mt-0.5">透明性評価：高</div>
+            <div className="text-white font-bold text-lg leading-tight">
+              {clinics.filter(c => c.totalFee).length}院
+            </div>
+            <div className="text-teal-200 text-[9px] leading-tight mt-0.5">トータルフィー制</div>
           </div>
         </div>
 
@@ -192,28 +194,14 @@ export default function ClinicList() {
               条件に合うクリニックが見つかりませんでした
             </div>
           ) : (
-            filtered.map((clinic) => (
+            filtered.map((clinic, idx) => (
               <Link to={`/clinic/${clinic.id}`} key={clinic.id}>
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
                   {/* Clinic header */}
                   <div className="p-3 pb-2 flex gap-3">
-                    {/* Thumbnail */}
-                    <div className="flex-shrink-0 relative w-[120px] h-[90px] md:w-[160px] md:h-[120px]">
-                      <img
-                        src={DUMMY_IMAGES[filtered.indexOf(clinic) % DUMMY_IMAGES.length]}
-                        alt={clinic.name}
-                        className="w-full h-full object-cover rounded-lg"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          e.currentTarget.nextElementSibling.style.display = 'flex';
-                        }}
-                      />
-                      <div
-                        className="absolute inset-0 rounded-lg items-center justify-center bg-teal-50"
-                        style={{ display: 'none' }}
-                      >
-                        <span className="text-teal-700 font-bold text-2xl">{clinic.name.charAt(0)}</span>
-                      </div>
+                    {/* イニシャルアイコン */}
+                    <div className="flex-shrink-0 w-[80px] h-[80px] md:w-[100px] md:h-[100px] rounded-lg bg-teal-50 flex items-center justify-center">
+                      <span className="text-teal-700 font-bold text-2xl">{clinic.name.charAt(0)}</span>
                     </div>
 
                     {/* Info */}
@@ -221,50 +209,39 @@ export default function ClinicList() {
                       <div className="flex items-start justify-between mb-1">
                         <div className="flex-1 min-w-0 pr-1">
                           <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-
                             <span className="text-gray-400 text-[10px]">{clinic.area}</span>
                           </div>
                           <h2 className="text-gray-900 font-bold text-base leading-tight line-clamp-2">{clinic.name}</h2>
                         </div>
                         <div className="flex-shrink-0 text-right ml-1">
                           <div className="text-teal-700 font-bold text-sm">{clinic.priceRange}</div>
-                          <div className="text-gray-400 text-[9px]">最低料金目安</div>
+                          <div className="text-gray-400 text-[9px]">料金目安</div>
                         </div>
                       </div>
 
-                      {/* Rating */}
-                      <div className="flex items-center gap-1 mb-1">
-                        {!clinic.reviewCount || clinic.reviewCount === 0 ? (
-                          <span className="text-gray-400 text-sm">情報収集中</span>
-                        ) : clinic.reviewCount < 3 ? (
-                          <>
-                            <StarRating rating={clinic.rating} />
-                            <span className="text-amber-500 font-bold text-xs">{clinic.rating}</span>
-                            <span className="text-gray-400 text-[10px]">（{clinic.reviewCount}件・参考値）</span>
-                          </>
+                      {/* 対応治療 */}
+                      <div className="flex items-center gap-1 mb-1 flex-wrap">
+                        {clinic.treatments.length > 0 ? (
+                          clinic.treatments.map((t) => (
+                            <span key={t} className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                              {t}
+                            </span>
+                          ))
                         ) : (
-                          <>
-                            <StarRating rating={clinic.rating} />
-                            <span className="text-amber-500 font-bold text-xs">{clinic.rating}</span>
-                            <span className="text-gray-400 text-[10px]">（{clinic.reviewCount}件）</span>
-                          </>
+                          <span className="text-gray-400 text-[10px]">対応治療：情報収集中</span>
+                        )}
+                        {clinic.totalFee && (
+                          <span className="text-[10px] bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full border border-teal-200">
+                            トータルフィー制
+                          </span>
                         )}
                       </div>
 
-                      {/* Description */}
-                      <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">
-                        {clinic.description}
+                      {/* 最寄り駅 */}
+                      <p className="text-gray-400 text-xs line-clamp-1">
+                        {clinic.station || clinic.address}
                       </p>
                     </div>
-                  </div>
-
-                  {/* Treatment tags */}
-                  <div className="px-4 pb-3 flex gap-1.5 flex-wrap">
-                    {clinic.treatments.map((t) => (
-                      <span key={t} className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                        {t}
-                      </span>
-                    ))}
                   </div>
 
                   {/* Footer */}
@@ -274,7 +251,7 @@ export default function ClinicList() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
-                      {clinic.access}
+                      {clinic.station || ''}
                     </span>
                     <span className="text-teal-700 text-sm font-semibold flex items-center gap-0.5">
                       詳細を見る

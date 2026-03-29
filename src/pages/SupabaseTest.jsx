@@ -1,13 +1,10 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { seedClinics } from '../lib/seedClinics';
 
 export default function SupabaseTest() {
   const [clinics, setClinics] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [seeding, setSeeding] = useState(false);
-  const [seedResult, setSeedResult] = useState(null);
 
   async function fetchClinics() {
     setLoading(true);
@@ -29,38 +26,9 @@ export default function SupabaseTest() {
     fetchClinics();
   }, []);
 
-  async function handleSeed() {
-    setSeeding(true);
-    setSeedResult(null);
-    setError(null);
-    try {
-      const count = await seedClinics();
-      setSeedResult(`${count}件のデータを投入しました`);
-      await fetchClinics();
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setSeeding(false);
-    }
-  }
-
   return (
     <div className="p-8 max-w-2xl mx-auto">
       <h1 className="text-xl font-bold mb-4">Supabase 接続テスト</h1>
-
-      <button
-        onClick={handleSeed}
-        disabled={seeding}
-        className="mb-4 px-4 py-2 bg-teal-700 text-white rounded-lg text-sm font-semibold disabled:opacity-50"
-      >
-        {seeding ? '投入中...' : 'シードデータを投入する'}
-      </button>
-
-      {seedResult && (
-        <div className="bg-blue-50 border border-blue-200 rounded p-3 text-blue-700 text-sm mb-4">
-          ✓ {seedResult}
-        </div>
-      )}
 
       {loading && <p className="text-gray-500">取得中...</p>}
 
@@ -83,7 +51,7 @@ export default function SupabaseTest() {
       )}
 
       {!loading && !error && clinics.length === 0 && (
-        <p className="text-gray-400 text-sm">clinics テーブルにデータがありません。上のボタンでシードデータを投入してください。</p>
+        <p className="text-gray-400 text-sm">clinics テーブルにデータがありません。SQL Editorからデータを投入してください。</p>
       )}
     </div>
   );
