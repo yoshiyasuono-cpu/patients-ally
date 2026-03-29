@@ -5,15 +5,43 @@ import { mapFromDb } from '../lib/seedClinics';
 import Header from '../components/Header';
 
 const FILTERS = ['すべて', 'ワイヤー矯正', 'マウスピース矯正'];
-const AREAS = [
-  'すべて', '渋谷区', '新宿区', '港区', '中央区', '千代田区', '文京区',
-  '世田谷区', '目黒区', '豊島区', '品川区', '大田区', '杉並区', '中野区',
-  '板橋区', '練馬区', '北区', '台東区', '墨田区', '江東区', '葛飾区',
-  '荒川区', '足立区', '江戸川区', '八王子市', '町田市', '立川市', '調布市',
-  '府中市', '武蔵野市', '三鷹市', '昭島市', '稲城市', '国分寺市',
-  '国立市', '小平市', '日野市', '西東京市',
+
+// エリアグループ定義（グループ名 → 含まれる区/市）
+const AREA_GROUPS = {
+  '都心エリア': ['千代田区', '中央区', '港区'],
+  '渋谷・表参道エリア': ['渋谷区', '目黒区'],
+  '新宿・高田馬場エリア': ['新宿区', '中野区'],
+  '銀座・有楽町エリア': ['中央区', '千代田区'],
+  '池袋・巣鴨エリア': ['豊島区', '北区', '板橋区'],
+  '吉祥寺・三鷹エリア': ['武蔵野市', '三鷹市', '杉並区'],
+  '立川・多摩エリア': ['立川市', '八王子市', '町田市', '調布市', '府中市', '昭島市', '稲城市', '国分寺市', '国立市', '小平市', '日野市', '西東京市'],
+};
+
+// セレクトボックス用の選択肢（グループ → 個別区市）
+const AREA_OPTIONS = [
+  { label: 'すべて', value: 'すべて' },
+  { label: '--- エリアで探す ---', value: '', disabled: true },
+  ...Object.keys(AREA_GROUPS).map(g => ({ label: g, value: g })),
+  { label: '--- 区・市で探す ---', value: '', disabled: true },
+  ...['渋谷区', '新宿区', '港区', '中央区', '千代田区', '文京区',
+    '世田谷区', '目黒区', '豊島区', '品川区', '大田区', '杉並区', '中野区',
+    '板橋区', '練馬区', '北区', '台東区', '墨田区', '江東区', '葛飾区',
+    '荒川区', '足立区', '江戸川区',
+    '八王子市', '町田市', '立川市', '調布市', '府中市', '武蔵野市', '三鷹市',
+    '昭島市', '稲城市', '国分寺市', '国立市', '小平市', '日野市', '西東京市',
+  ].map(a => ({ label: a, value: a })),
 ];
+
 const BUDGETS = ['指定なし', '〜80万円', '80〜100万円', '100〜120万円', '120万円以上'];
+
+// エリアマッチ判定（グループまたは個別区市）
+function matchesArea(clinicArea, selectedArea) {
+  if (selectedArea === 'すべて') return true;
+  if (AREA_GROUPS[selectedArea]) {
+    return AREA_GROUPS[selectedArea].includes(clinicArea);
+  }
+  return clinicArea === selectedArea;
+}
 
 export default function ClinicList() {
   const [clinics, setClinics] = useState([]);
@@ -35,12 +63,14 @@ export default function ClinicList() {
   }, []);
 
   const filtered = clinics.filter((c) => {
+    const q = search.trim();
     const matchSearch =
-      search === '' ||
-      c.name.includes(search) ||
-      c.area.includes(search) ||
-      c.station.includes(search);
-    const matchArea = area === 'すべて' || c.area === area;
+      q === '' ||
+      c.name.includes(q) ||
+      c.area.includes(q) ||
+      c.station.includes(q) ||
+      c.address.includes(q);
+    const matchArea = matchesArea(c.area, area);
     const matchFilter =
       filter === 'すべて' ||
       (filter === 'ワイヤー矯正' && c.wireAvailable) ||
@@ -126,7 +156,7 @@ export default function ClinicList() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="クリニック名・エリア・治療方法で検索"
+            placeholder="クリニック名・駅名・エリアで検索"
             className="w-full pl-9 pr-4 rounded-lg text-sm bg-white text-gray-800 placeholder-gray-400 outline-none shadow"
             style={{ minHeight: '44px' }}
           />
@@ -160,7 +190,13 @@ export default function ClinicList() {
             className="flex-1 text-sm border border-gray-200 rounded-lg px-2 bg-white text-gray-700 outline-none"
             style={{ minHeight: '44px' }}
           >
-            {AREAS.map((a) => <option key={a}>{a}</option>)}
+            {AREA_OPTIONS.map((opt, i) =>
+              opt.disabled ? (
+                <option key={i} disabled value="">{opt.label}</option>
+              ) : (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              )
+            )}
           </select>
           <select
             value={budget}
