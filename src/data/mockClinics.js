@@ -1,5 +1,73 @@
 export const mockClinics = [
   {
+    id: "nao",
+    name: "立川北・なお矯正歯科クリニック",
+    nameEn: "TACHIKAWA-KITA NAO ORTHODONTIC CLINIC",
+    area: "立川",
+    station: "立川駅北口",
+    address: "〒190-0012 立川市曙町2-11-1 2F",
+    tel: "042-525-1187",
+    url: "http://www.nao-kyousei.jp/",
+    hours: {
+      weekday: "10:00〜13:00 / 14:30〜19:30（火〜土）",
+      saturday: "10:00〜13:00 / 14:30〜18:00",
+      closed: "日・月・木曜"
+    },
+    fee_min: 385000,
+    fee_max: 1397000,
+    fee_label: "38.5〜139.7万円",
+    fees: [
+      { type: "小児矯正（乳歯列）",           price: 385000 },
+      { type: "大人矯正・メタルブラケット",     price: 770000 },
+      { type: "大人矯正・セラミックブラケット",  price: 880000 },
+      { type: "裏側矯正（フルリンガル）",       price: 1397000 },
+      { type: "ハーフリンガル",               price: 1155000 },
+      { type: "マウスピース矯正",             price: 1155000 },
+      { type: "初診料",                      price: 1100 },
+      { type: "精密検査",                    price: 27500 },
+      { type: "診断料",                      price: 27500 },
+    ],
+    transparency_score: 4.1,
+    explanation_score: 4.3,
+    extra_cost_rate: 18,
+    pressure_level: "low",
+    review_count: 24,
+    score_breakdown: [
+      { label: "料金透明性",     score: 4.2, description: "費用説明の明確さ" },
+      { label: "説明満足度",     score: 4.3, description: "治療説明の丁寧さ" },
+      { label: "追加費用の少なさ", score: 4.5, description: "見積もりとの乖離が少ない" },
+      { label: "契約圧力のなさ",  score: 4.0, description: "当日契約を急かさない" },
+    ],
+    tags: ["矯正専門", "子供対応", "大人矯正", "裏側矯正", "マウスピース", "カウンセリング無料"],
+    certifications: ["日本矯正歯科学会 認定医"],
+    has_certified_doctor: true,
+    accepts_installment: true,
+    accepts_credit: false,
+    reviews: [
+      {
+        rating: 5,
+        date: "2025年10月",
+        treatment: "ワイヤー矯正（セラミック）",
+        text: "初診から費用の総額を丁寧に説明してくれた。追加費用もなく安心して治療を終えられた。子供の矯正でも同じ先生に診てもらいたい。",
+        verified: true
+      },
+      {
+        rating: 4,
+        date: "2025年8月",
+        treatment: "マウスピース矯正",
+        text: "治療期間が当初の予定より2ヶ月延びたが、その都度説明があった。費用は最初の見積もり通りで追加はなかった。",
+        verified: true
+      },
+      {
+        rating: 3,
+        date: "2025年6月",
+        treatment: "大人矯正",
+        text: "説明は丁寧だが、予約が取りにくい時期があった。費用面は明確で不満はない。",
+        verified: true
+      }
+    ]
+  },
+  {
     id: "mc1",
     name: "たちかわ矯正歯科クリニック",
     area: "立川",
