@@ -9,7 +9,7 @@ export const mockClinics = [
     tel: "042-525-1187",
     url: "http://www.nao-kyousei.jp/",
     hours: {
-      weekday: "10:00〜13:00 / 14:30〜19:30（火〜土）",
+      weekday: "10:00〜13:00 / 14:30〜19:30",
       saturday: "10:00〜13:00 / 14:30〜18:00",
       closed: "日・月・木曜"
     },

@@ -253,7 +253,7 @@ export default function ClinicDemoDetail() {
             <table className="w-full text-sm">
               <tbody className="divide-y divide-gray-100">
                 <tr>
-                  <td className="py-2.5 text-gray-400 w-24">平日・土</td>
+                  <td className="py-2.5 text-gray-400 w-24">火〜土</td>
                   <td className="py-2.5 text-gray-700">{clinic.hours.weekday}</td>
                 </tr>
                 <tr>
