@@ -264,9 +264,10 @@ export default function ClinicsSearch() {
                         {Math.round(clinic.fee_min / 10000)}〜{Math.round(clinic.fee_max / 10000)}万円
                       </p>
                     </div>
-                    <div>
+                    <div className={`rounded-md px-2 py-1 -mx-2 -my-1 ${clinic.extra_cost_rate >= 40 ? 'bg-red-50' : ''}`}>
                       <p className="text-xs text-gray-400">追加費用発生率</p>
                       <p className={`font-semibold ${clinic.extra_cost_rate >= 40 ? 'text-red-500' : 'text-gray-700'}`}>
+                        {clinic.extra_cost_rate >= 40 && <span className="text-xs mr-1">⚠</span>}
                         {clinic.extra_cost_rate}%
                       </p>
                     </div>
@@ -292,7 +293,7 @@ export default function ClinicsSearch() {
                       {isSelected ? '選択済み ✓' : '比較リストに追加'}
                     </button>
                     <Link
-                      to={`/clinic/${clinic.id}`}
+                      to={`/clinics/${clinic.id}`}
                       className="flex-1 text-center text-sm font-medium rounded-lg py-2 bg-blue-900 text-white hover:bg-blue-800 transition-colors"
                     >
                       詳細を見る

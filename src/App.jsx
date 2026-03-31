@@ -11,6 +11,7 @@ import Survey from './pages/Survey';
 import ReviewForm from './pages/ReviewForm';
 import ClinicsSearch from './pages/ClinicsSearch';
 import ClinicsCompare from './pages/ClinicsCompare';
+import ClinicDemoDetail from './pages/ClinicDemoDetail';
 import './index.css';
 
 function ScrollToTop() {
@@ -37,6 +38,7 @@ export default function App() {
         <Route path="/review" element={<ReviewForm />} />
         <Route path="/clinics" element={<ClinicsSearch />} />
         <Route path="/clinics/compare" element={<ClinicsCompare />} />
+        <Route path="/clinics/:id" element={<ClinicDemoDetail />} />
       </Routes>
     </BrowserRouter>
   );
