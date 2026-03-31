@@ -43,7 +43,9 @@ export default function ClinicsCompare() {
     async function fetchClinics() {
       try {
         const { data, error } = await supabase.from('clinics').select('*');
-        if (error || !data || data.length === 0) {
+        // デモ用フィールド（transparency_score等）がなければmockにフォールバック
+        const hasDemo = data && data.length > 0 && 'transparency_score' in data[0];
+        if (error || !hasDemo) {
           setClinics(mockClinics.filter(c => ids.includes(c.id)));
         } else {
           const filtered = data.filter(c => ids.includes(String(c.id)));
