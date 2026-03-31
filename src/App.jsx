@@ -9,6 +9,8 @@ import ForClinics from './pages/ForClinics';
 import Policy from './pages/Policy';
 import Survey from './pages/Survey';
 import ReviewForm from './pages/ReviewForm';
+import ClinicsSearch from './pages/ClinicsSearch';
+import ClinicsCompare from './pages/ClinicsCompare';
 import './index.css';
 
 function ScrollToTop() {
@@ -33,6 +35,8 @@ export default function App() {
         <Route path="/policy" element={<Policy />} />
         <Route path="/survey" element={<Survey />} />
         <Route path="/review" element={<ReviewForm />} />
+        <Route path="/clinics" element={<ClinicsSearch />} />
+        <Route path="/clinics/compare" element={<ClinicsCompare />} />
       </Routes>
     </BrowserRouter>
   );
