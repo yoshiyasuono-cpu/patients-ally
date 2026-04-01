@@ -1,8 +1,11 @@
 // TransparencySection.jsx
-// セクション4：透明性データ
+// セクション4：透明性データ（レーダーチャート + 数値テーブル）
 // Supabaseにデータが揃うまではmockTransparencyDataを使用。
-// 実データは認証済みユーザーのみ取得可能なため、
-// 将来的にはSupabase RPC（集計関数）に差し替える。
+
+import {
+  RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
+  ResponsiveContainer, Legend, Tooltip,
+} from 'recharts';
 
 const mockTransparencyData = {
   count: 5,
@@ -23,6 +26,67 @@ const mockTransparencyData = {
     satisfaction_score: 3.4,
   },
 };
+
+function buildRadarData(d) {
+  return [
+    {
+      subject: '初回見積\n提示率',
+      clinic: d.fee_presentation_rate,
+      avg: d.area_avg.fee_presentation_rate,
+    },
+    {
+      subject: '追加費用\nの少なさ',
+      clinic: 100 - d.extra_cost_rate,
+      avg: 100 - d.area_avg.extra_cost_rate,
+    },
+    {
+      subject: '追加費用\n事前説明率',
+      clinic: d.explanation_rate,
+      avg: d.area_avg.explanation_rate,
+    },
+    {
+      subject: 'リスク\n説明率',
+      clinic: d.risk_explanation_rate,
+      avg: d.area_avg.risk_explanation_rate,
+    },
+    {
+      subject: '書面\n交付率',
+      clinic: d.document_rate,
+      avg: d.area_avg.document_rate,
+    },
+    {
+      subject: '契約圧\nのなさ',
+      clinic: 100 - d.pressure_rate,
+      avg: 100 - d.area_avg.pressure_rate,
+    },
+  ];
+}
+
+// 軸ラベルを改行対応で描画するカスタムコンポーネント
+function CustomAxisTick({ x, y, payload, cx, cy }) {
+  const lines = payload.value.split('\n');
+  // ラベルを中心から外側に配置する方向ベクトル
+  const angle = Math.atan2(y - cy, x - cx);
+  const offset = 12;
+  const lx = x + Math.cos(angle) * offset;
+  const ly = y + Math.sin(angle) * offset;
+  const lineH = 13;
+  return (
+    <text
+      x={lx}
+      y={ly - ((lines.length - 1) * lineH) / 2}
+      textAnchor="middle"
+      dominantBaseline="central"
+      style={{ fontSize: 11, fill: '#555', fontFamily: 'sans-serif' }}
+    >
+      {lines.map((line, i) => (
+        <tspan key={i} x={lx} dy={i === 0 ? 0 : lineH}>
+          {line}
+        </tspan>
+      ))}
+    </text>
+  );
+}
 
 function Badge({ type }) {
   if (type === 'trust') {
@@ -50,7 +114,6 @@ function Badge({ type }) {
 
 function DataRow({ label, clinicVal, avgVal, unit = '%', lowerIsBetter = false }) {
   const isGood = lowerIsBetter ? clinicVal < avgVal : clinicVal > avgVal;
-  const diff = Math.abs(clinicVal - avgVal);
   const arrow = lowerIsBetter
     ? (clinicVal < avgVal ? '↓ 低い' : '↑ 高い')
     : (clinicVal > avgVal ? '↑ 高い' : '↓ 低い');
@@ -58,19 +121,13 @@ function DataRow({ label, clinicVal, avgVal, unit = '%', lowerIsBetter = false }
   return (
     <div className="flex items-center py-2.5 border-b border-gray-100 last:border-0 gap-2 text-sm">
       <span className="flex-1 text-gray-700">{label}</span>
-      <span
-        className="w-16 text-right font-bold"
-        style={{ color: isGood ? '#27AE60' : '#E67E22' }}
-      >
+      <span className="w-16 text-right font-bold" style={{ color: isGood ? '#27AE60' : '#E67E22' }}>
         {unit === '★' ? `★${clinicVal.toFixed(1)}` : `${clinicVal}${unit}`}
       </span>
       <span className="w-14 text-right text-gray-400 text-xs">
         {unit === '★' ? `★${avgVal.toFixed(1)}` : `${avgVal}${unit}`}
       </span>
-      <span
-        className="w-16 text-right text-xs font-semibold"
-        style={{ color: isGood ? '#27AE60' : '#E67E22' }}
-      >
+      <span className="w-16 text-right text-xs font-semibold" style={{ color: isGood ? '#27AE60' : '#E67E22' }}>
         {arrow}
       </span>
     </div>
@@ -85,16 +142,12 @@ export default function TransparencySection({ data: propData }) {
   if (count >= 10) badgeType = 'trust';
   else if (count >= 3) badgeType = 'reference';
 
+  const radarData = buildRadarData(d);
+
   return (
     <div className="max-w-4xl mx-auto px-4 mt-4">
-      <div
-        style={{
-          background: '#F0FFF4',
-          borderLeft: '4px solid #27AE60',
-          borderRadius: '8px',
-          padding: '20px',
-        }}
-      >
+      <div style={{ background: '#F0FFF4', borderLeft: '4px solid #27AE60', borderRadius: '8px', padding: '20px' }}>
+
         {/* ヘッダー */}
         <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
           <div className="flex items-center gap-2">
@@ -105,7 +158,6 @@ export default function TransparencySection({ data: propData }) {
         </div>
 
         {count < 3 ? (
-          /* 調査中 */
           <div className="text-center py-4">
             <p className="text-gray-500 text-sm">
               調査中（あと<span className="font-bold text-gray-700">{3 - count}</span>件で公開）
@@ -116,22 +168,69 @@ export default function TransparencySection({ data: propData }) {
           </div>
         ) : (
           <>
-            {/* 凡例 */}
-            <div className="flex items-center gap-4 mb-2 text-xs text-gray-400 justify-end">
-              <span>この医院</span>
-              <span>全体平均</span>
-              <span className="w-16" />
+            {/* ── レーダーチャート ── */}
+            <div style={{ width: '100%', height: 300 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart data={radarData} outerRadius="62%">
+                  <PolarGrid stroke="#ccc" />
+                  <PolarAngleAxis
+                    dataKey="subject"
+                    tick={<CustomAxisTick />}
+                    tickLine={false}
+                  />
+                  <PolarRadiusAxis
+                    angle={90}
+                    domain={[0, 100]}
+                    tickCount={5}
+                    tick={{ fontSize: 9, fill: '#aaa' }}
+                    axisLine={false}
+                  />
+                  {/* 全体平均（グレー点線） */}
+                  <Radar
+                    name="全体平均"
+                    dataKey="avg"
+                    stroke="#999"
+                    fill="#999"
+                    fillOpacity={0.1}
+                    strokeDasharray="4 3"
+                    strokeWidth={1.5}
+                  />
+                  {/* この医院（青） */}
+                  <Radar
+                    name="この医院"
+                    dataKey="clinic"
+                    stroke="#2563EB"
+                    fill="#2563EB"
+                    fillOpacity={0.2}
+                    strokeWidth={2}
+                  />
+                  <Legend
+                    iconType="line"
+                    iconSize={16}
+                    wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
+                  />
+                  <Tooltip
+                    formatter={(val, name) => [`${val}%`, name]}
+                    contentStyle={{ fontSize: 12 }}
+                  />
+                </RadarChart>
+              </ResponsiveContainer>
             </div>
 
-            {/* データ行 */}
-            <div>
-              <DataRow label="初回見積の提示"         clinicVal={d.fee_presentation_rate}  avgVal={d.area_avg.fee_presentation_rate}  unit="%" />
-              <DataRow label="追加費用の発生率"        clinicVal={d.extra_cost_rate}         avgVal={d.area_avg.extra_cost_rate}         unit="%" lowerIsBetter />
-              <DataRow label="追加費用の事前説明率"    clinicVal={d.explanation_rate}         avgVal={d.area_avg.explanation_rate}         unit="%" />
-              <DataRow label="リスク説明率"            clinicVal={d.risk_explanation_rate}   avgVal={d.area_avg.risk_explanation_rate}   unit="%" />
-              <DataRow label="書面交付率"              clinicVal={d.document_rate}            avgVal={d.area_avg.document_rate}            unit="%" />
-              <DataRow label="当日契約プレッシャー率"  clinicVal={d.pressure_rate}            avgVal={d.area_avg.pressure_rate}            unit="%" lowerIsBetter />
-              <DataRow label="費用納得度"              clinicVal={d.satisfaction_score}      avgVal={d.area_avg.satisfaction_score}      unit="★" />
+            {/* ── 数値テーブル ── */}
+            <div className="mt-4 border-t border-green-100 pt-3">
+              <div className="flex items-center gap-4 mb-1 text-xs text-gray-400 justify-end">
+                <span>この医院</span>
+                <span className="w-14 text-right">全体平均</span>
+                <span className="w-16" />
+              </div>
+              <DataRow label="初回見積の提示"        clinicVal={d.fee_presentation_rate}  avgVal={d.area_avg.fee_presentation_rate}  unit="%" />
+              <DataRow label="追加費用の発生率"       clinicVal={d.extra_cost_rate}         avgVal={d.area_avg.extra_cost_rate}         unit="%" lowerIsBetter />
+              <DataRow label="追加費用の事前説明率"   clinicVal={d.explanation_rate}        avgVal={d.area_avg.explanation_rate}        unit="%" />
+              <DataRow label="リスク説明率"           clinicVal={d.risk_explanation_rate}   avgVal={d.area_avg.risk_explanation_rate}   unit="%" />
+              <DataRow label="書面交付率"             clinicVal={d.document_rate}           avgVal={d.area_avg.document_rate}           unit="%" />
+              <DataRow label="当日契約プレッシャー率" clinicVal={d.pressure_rate}           avgVal={d.area_avg.pressure_rate}           unit="%" lowerIsBetter />
+              <DataRow label="費用納得度"             clinicVal={d.satisfaction_score}      avgVal={d.area_avg.satisfaction_score}      unit="★" />
             </div>
 
             <p className="text-xs text-gray-400 mt-3">
