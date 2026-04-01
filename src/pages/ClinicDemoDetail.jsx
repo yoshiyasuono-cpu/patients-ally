@@ -1,5 +1,8 @@
 import { Link, useParams } from 'react-router-dom';
 import { mockClinics } from '../data/mockClinics';
+import TransparencySection from '../components/TransparencySection';
+import PatientCommentsSection from '../components/PatientCommentsSection';
+import SurveyInlineForm from '../components/SurveyInlineForm';
 
 // ---- 汎用モック口コミ（richデータのないクリニック用） ----
 const FALLBACK_REVIEWS = [
@@ -229,7 +232,13 @@ export default function ClinicDemoDetail() {
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-bold text-gray-800">患者の声</h2>
-            <span className="text-xs text-gray-400">{clinic.review_count}件の口コミより</span>
+            <a
+              href="#survey-form"
+              onClick={(e) => { e.preventDefault(); document.getElementById('survey-form')?.scrollIntoView({ behavior: 'smooth' }); }}
+              className="text-teal-700 text-xs font-semibold border border-teal-200 px-3 py-1.5 rounded-lg hover:bg-teal-50"
+            >
+              あなたの経験を教えてください
+            </a>
           </div>
           <div className="space-y-4">
             {reviews.map((r, i) => (
@@ -292,6 +301,25 @@ export default function ClinicDemoDetail() {
             <li>・医院からの広告費は一切受け取っていません。</li>
             <li>・情報の誤りは <span className="text-blue-700 underline cursor-pointer">修正申請</span> から</li>
           </ul>
+        </div>
+
+        {/* セクション4：透明性データ */}
+        <div className="mb-4">
+          <TransparencySection />
+        </div>
+
+        {/* セクション5：患者の一言 */}
+        <div className="mb-4">
+          <PatientCommentsSection />
+        </div>
+
+        {/* セクション6：インラインフォーム */}
+        <div className="mb-6">
+          <SurveyInlineForm
+            clinicId={clinic.id}
+            clinicSlug={clinic.id}
+            clinicName={clinic.name}
+          />
         </div>
 
         {/* 比較・一覧ボタン */}

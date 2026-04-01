@@ -3,6 +3,9 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { mapFromDb } from '../lib/seedClinics';
 import Header from '../components/Header';
+import TransparencySection from '../components/TransparencySection';
+import PatientCommentsSection from '../components/PatientCommentsSection';
+import SurveyInlineForm from '../components/SurveyInlineForm';
 
 export default function ClinicDetail() {
   const { id } = useParams();
@@ -164,6 +167,19 @@ export default function ClinicDetail() {
         </div>
       </div>
 
+      {/* セクション4：透明性データ */}
+      <TransparencySection />
+
+      {/* セクション5：患者の一言 */}
+      <PatientCommentsSection />
+
+      {/* セクション6：インラインフォーム */}
+      <SurveyInlineForm
+        clinicId={id}
+        clinicSlug={null}
+        clinicName={clinic.name}
+      />
+
       {/* 口コミ */}
       <div className="max-w-4xl mx-auto px-4 mt-4">
         <div className="bg-white rounded-xl shadow-sm p-4">
@@ -172,12 +188,13 @@ export default function ClinicDetail() {
               <span className="w-4 h-4 bg-teal-700 rounded text-white text-[10px] flex items-center justify-center">&#9733;</span>
               患者の声（{reviews.length}件）
             </h2>
-            <Link
-              to={`/review?clinic=${id}`}
+            <a
+              href="#survey-form"
+              onClick={(e) => { e.preventDefault(); document.getElementById('survey-form')?.scrollIntoView({ behavior: 'smooth' }); }}
               className="text-teal-700 text-xs font-semibold border border-teal-200 px-3 py-1.5 rounded-lg hover:bg-teal-50"
             >
-              口コミを投稿
-            </Link>
+              あなたの経験を教えてください
+            </a>
           </div>
 
           {reviews.length === 0 ? (
