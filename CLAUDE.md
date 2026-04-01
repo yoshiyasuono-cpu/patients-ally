@@ -23,19 +23,24 @@ Supabase（PostgreSQL）をバックエンドに使用。
 
 ## 前回の作業ログ
 - 作業日：2026-04-01
-- 作業内容：医院詳細ページ改修 v3（ClinicDetail.jsx / ClinicDemoDetail.jsx）
-  - TransparencySection.jsx 新設（透明性データ・n件数別バッジ・全体平均比較）
-  - PatientCommentsSection.jsx 新設（審査済みコメント表示・モックデータ）
-  - SurveyInlineForm.jsx 新設（Q1〜Q8＋確認問題＋自由記述・survey_responsesへINSERT・送信後完了メッセージ）
-  - ClinicDetail: セクション4〜6追加、「口コミを投稿」→「あなたの経験を教えてください」(#survey-formへスクロール)
-  - ClinicDemoDetail: 同3セクション追加、患者レビューセクションにボタン追加
-  - sql/create_survey_response_tables.sql 作成（survey_responses / reward_claims / RLS）
-  - Vercel（git push）+ XServer（FTPS）両方デプロイ完了
+- 作業内容：
+  - 医院詳細ページ改修 v3（ClinicDetail / ClinicDemoDetail）
+    - TransparencySection: レーダーチャート（recharts）＋数値テーブル・n件数別バッジ
+    - PatientCommentsSection: 審査済みコメント表示（モックデータ）
+    - SurveyInlineForm: Q1〜Q8インラインフォーム・survey_responsesへINSERT
+    - 「口コミを投稿」→「あなたの経験を教えてください」に変更（#survey-formスクロール）
+  - Supabase survey_responses INSERTエラー修正
+    - 原因：RLS有効＋anonへのGRANT未付与
+    - 対処：ALTER TABLE survey_responses DISABLE ROW LEVEL SECURITY で解消・INSERT確認済み
+  - ダッシュボード機能拡充
+    - セクションC: スコア推移折れ線（先月比バッジ・エリア差表示）
+    - セクションA: 4系列競合レーダーチャート＋エリア内ランキングバー（自院ハイライト）
+    - セクションB: 優先度別改善提案カード3件
+  - 全変更をVercel（git push）＋XServer（FTPS）両方にデプロイ済み
 - 次回やること：
-  - Supabase SQL Editorで create_survey_response_tables.sql を実行
-  - patients-ally.vercel.app/clinics/nao で動作確認
   - 謝礼フォームURLが決まったら SurveyInlineForm.jsx の「QUOカードPay受け取り」リンクを差し替え
   - 透明性データのSupabase RPC（集計関数）実装（現在はモックデータ固定）
+  - reward_claims テーブルのRLS/GRANT設定（survey_responsesと同様に要確認）
 
 ## 3サイト構成（MedBaseファミリー）
 
