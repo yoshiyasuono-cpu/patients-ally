@@ -22,9 +22,20 @@ Supabase（PostgreSQL）をバックエンドに使用。
 4. push完了を報告
 
 ## 前回の作業ログ
-- 作業日：2026-03-31
-- 作業内容：CLAUDE.md作成、プロジェクト構成分析（3サイト構成・Supabase DBスキーマ・ルーティング整理）
-- 次回やること：未定（指示待ち）
+- 作業日：2026-04-01
+- 作業内容：医院詳細ページ改修 v3（ClinicDetail.jsx / ClinicDemoDetail.jsx）
+  - TransparencySection.jsx 新設（透明性データ・n件数別バッジ・全体平均比較）
+  - PatientCommentsSection.jsx 新設（審査済みコメント表示・モックデータ）
+  - SurveyInlineForm.jsx 新設（Q1〜Q8＋確認問題＋自由記述・survey_responsesへINSERT・送信後完了メッセージ）
+  - ClinicDetail: セクション4〜6追加、「口コミを投稿」→「あなたの経験を教えてください」(#survey-formへスクロール)
+  - ClinicDemoDetail: 同3セクション追加、患者レビューセクションにボタン追加
+  - sql/create_survey_response_tables.sql 作成（survey_responses / reward_claims / RLS）
+  - Vercel（git push）+ XServer（FTPS）両方デプロイ完了
+- 次回やること：
+  - Supabase SQL Editorで create_survey_response_tables.sql を実行
+  - patients-ally.vercel.app/clinics/nao で動作確認
+  - 謝礼フォームURLが決まったら SurveyInlineForm.jsx の「QUOカードPay受け取り」リンクを差し替え
+  - 透明性データのSupabase RPC（集計関数）実装（現在はモックデータ固定）
 
 ## 3サイト構成（MedBaseファミリー）
 
