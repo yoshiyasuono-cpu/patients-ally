@@ -50,6 +50,7 @@ export default function ClinicList() {
   const [area, setArea] = useState('すべて');
   const [budget, setBudget] = useState('指定なし');
   const [filter, setFilter] = useState('すべて');
+  const [showCompany, setShowCompany] = useState(false);
 
   useEffect(() => {
     supabase
@@ -57,7 +58,16 @@ export default function ClinicList() {
       .select('*')
       .order('id')
       .then(({ data, error }) => {
-        if (!error && data) setClinics(data.map(mapFromDb));
+        if (!error && data) {
+          // fee_minがある医院を上位に表示（透明性データ充実順）
+          const mapped = data.map(mapFromDb);
+          mapped.sort((a, b) => {
+            const aHasFee = a.feeMin != null ? 0 : 1;
+            const bHasFee = b.feeMin != null ? 0 : 1;
+            return aHasFee - bHasFee;
+          });
+          setClinics(mapped);
+        }
         setLoading(false);
       });
   }, []);
@@ -108,6 +118,9 @@ export default function ClinicList() {
           </h1>
           <p className="text-teal-100 text-base leading-relaxed">
             料金・治療方針・リスク説明——比較に必要な事実情報を、医院ごとに整理してお届けします。
+          </p>
+          <p className="text-teal-200 text-sm mt-2 leading-relaxed">
+            現在208院掲載・順次料金比較データを拡充中。透明性データが充実した医院を優先表示しています。
           </p>
           <div className="inline-flex items-center gap-1.5 mt-3 bg-green-400/20 border border-green-300/40 text-green-200 text-sm font-medium px-4 py-1.5 rounded-full">
             <span className="text-green-300 font-bold">✓</span>
@@ -294,13 +307,33 @@ export default function ClinicList() {
       </div>
 
       {/* フッター */}
-      <footer className="w-full text-center py-8 pb-10 border-t border-gray-200 mt-4">
+      <footer className="w-full py-8 pb-10 border-t border-gray-200 mt-4">
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-4">
           <Link to="/policy" className="text-gray-400 text-sm hover:text-gray-600">投稿情報掲載基準</Link>
           <Link to="/for-clinics" className="text-gray-400 text-sm hover:text-gray-600">クリニックの方へ</Link>
+          <a href="/contact.php" className="text-gray-400 text-sm hover:text-gray-600">お問い合わせ</a>
         </div>
-        <p className="text-gray-400 text-xs">© 2026 患者の味方 — 矯正歯科の意思決定支援サービス</p>
+        <p className="text-center text-gray-400 text-xs">
+          © 2026 ClinicCompass by MedBase.
+          <button onClick={() => setShowCompany(true)} className="text-gray-400 text-xs hover:text-gray-600 underline bg-transparent border-none cursor-pointer">運営会社</button>
+        </p>
       </footer>
+
+      {/* 運営会社モーダル */}
+      {showCompany && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={() => setShowCompany(false)}>
+          <div className="bg-white rounded-xl p-8 max-w-md w-[90%] relative" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowCompany(false)} className="absolute top-3 right-4 text-xl text-gray-400 hover:text-gray-700 bg-transparent border-none cursor-pointer">&times;</button>
+            <h3 className="font-bold text-base mb-4">運営会社</h3>
+            <div className="text-sm leading-8">
+              <p className="text-gray-400 text-xs">会社名</p><p>株式会社ユナイテッドプロモーションズ</p>
+              <p className="text-gray-400 text-xs mt-1">代表者</p><p>大野芳裕</p>
+              <p className="text-gray-400 text-xs mt-1">所在地</p><p>〒190-0012 東京都立川市曙町2-14-19 シュールビル6階</p>
+              <p className="text-gray-400 text-xs mt-1">TEL</p><p>042-519-3582</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Fixed CTA button */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
