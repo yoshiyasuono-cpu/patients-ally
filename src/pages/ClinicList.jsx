@@ -34,6 +34,35 @@ const AREA_OPTIONS = [
 
 const BUDGETS = ['指定なし', '〜80万円', '80〜100万円', '100〜120万円', '120万円以上'];
 
+// n数表示ルール（トップ・詳細共通）
+export function nLabel(n) {
+  if (n == null || n <= 2) return { text: '調査中', color: 'text-gray-400', bg: 'bg-gray-100' };
+  if (n <= 9) return { text: `参考値（n=${n}）`, color: 'text-amber-600', bg: 'bg-amber-50' };
+  return { text: `信頼度の高いデータ（n=${n}）`, color: 'text-teal-700', bg: 'bg-teal-50' };
+}
+
+// ダミー比較カードデータ
+const COMPARE_CLINICS = [
+  {
+    name: 'A矯正歯科',
+    area: '渋谷区',
+    priceRange: '80〜120万円',
+    estimate: 95, extraExplain: 90, riskExplain: 85, document: true, n: 14,
+  },
+  {
+    name: 'B矯正歯科',
+    area: '立川市',
+    priceRange: '39〜140万円',
+    estimate: 100, extraExplain: 80, riskExplain: 80, document: true, n: 6,
+  },
+  {
+    name: 'C矯正歯科',
+    area: '新宿区',
+    priceRange: '70〜100万円',
+    estimate: 70, extraExplain: 50, riskExplain: 40, document: false, n: 2,
+  },
+];
+
 // エリアマッチ判定（グループまたは個別区市）
 function matchesArea(clinicArea, selectedArea) {
   if (selectedArea === 'すべて') return true;
@@ -41,6 +70,20 @@ function matchesArea(clinicArea, selectedArea) {
     return AREA_GROUPS[selectedArea].includes(clinicArea);
   }
   return clinicArea === selectedArea;
+}
+
+// 比較項目のバー表示
+function CompareBar({ label, value, suffix = '%' }) {
+  const barColor = value >= 80 ? 'bg-teal-600' : value >= 50 ? 'bg-amber-500' : 'bg-gray-300';
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-gray-500 text-[11px] w-28 flex-shrink-0">{label}</span>
+      <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
+        <div className={`h-full rounded-full ${barColor}`} style={{ width: `${Math.min(value, 100)}%` }} />
+      </div>
+      <span className="text-gray-700 text-xs font-semibold w-10 text-right">{value}{suffix}</span>
+    </div>
+  );
 }
 
 export default function ClinicList() {
@@ -110,58 +153,103 @@ export default function ClinicList() {
     <div className="min-h-screen bg-gray-50 pb-28">
       <Header />
 
-      {/* Hero */}
-      <div className="bg-gradient-to-br from-teal-700 to-teal-900 px-4 pt-6 pb-8 w-full">
-        <div className="text-white mb-4">
-          <h1 className="text-2xl font-bold leading-tight mb-2">
-            矯正する前に、比較する場所。
+      {/* ===== Hero ===== */}
+      <div className="bg-gradient-to-br from-[#0f1b2d] to-[#1a2a42] px-4 pt-8 pb-10 w-full">
+        <div className="max-w-3xl mx-auto text-center">
+          <h1 className="text-white text-2xl md:text-3xl font-bold leading-tight mb-3">
+            自由診療を、<br className="md:hidden" />比較可能・説明可能・検証可能に。
           </h1>
-          <p className="text-teal-100 text-base leading-relaxed">
-            料金・治療方針・リスク説明——比較に必要な事実情報を、医院ごとに整理してお届けします。
+          <p className="text-[#94a3b8] text-sm md:text-base leading-relaxed mb-5">
+            価格、追加費用、説明の丁寧さまで。<br className="md:hidden" />矯正治療を"納得して選ぶ"ための比較サイト。
           </p>
-          <p className="text-teal-200 text-sm mt-2 leading-relaxed">
-            現在208院掲載・順次料金比較データを拡充中。透明性データが充実した医院を優先表示しています。
-          </p>
-          <div className="inline-flex items-center gap-1.5 mt-3 bg-green-400/20 border border-green-300/40 text-green-200 text-sm font-medium px-4 py-1.5 rounded-full">
-            <span className="text-green-300 font-bold">✓</span>
-            ご利用は完全無料です。相談からクリニック紹介まで、患者様の費用負担はありません。
+
+          {/* 進捗表示 */}
+          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 text-white/80 text-xs font-medium px-4 py-2 rounded-full mb-6">
+            <span className="w-2 h-2 bg-teal-400 rounded-full animate-pulse" />
+            現在{clinics.length}院掲載・アンケート収集中
+          </div>
+
+          {/* CTA 3本 */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <a href="#clinics" className="bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold py-3 px-6 rounded-lg transition-colors">
+              クリニックを探す
+            </a>
+            <a href="https://medbase.jp/#problems" target="_blank" rel="noopener noreferrer"
+              className="bg-white/10 hover:bg-white/20 text-white text-sm font-medium py-3 px-6 rounded-lg border border-white/20 transition-colors">
+              比較の仕組みを見る
+            </a>
+            <a href="https://kyoseidatalab.jp/survey/" target="_blank" rel="noopener noreferrer"
+              className="bg-white/10 hover:bg-white/20 text-white text-sm font-medium py-3 px-6 rounded-lg border border-white/20 transition-colors">
+              アンケートに協力する
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* ===== 比較カードセクション ===== */}
+      <div className="w-full max-w-6xl mx-auto px-3 sm:px-6 -mt-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-gray-800 font-bold text-base">透明性データで比較する</h2>
+              <p className="text-gray-400 text-xs mt-0.5">比較軸：見積提示率 / 追加費用の事前説明率 / リスク説明率 / 書面交付 / n数</p>
+            </div>
+            <span className="text-[10px] text-gray-400 bg-gray-50 px-2 py-1 rounded">サンプル表示</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {COMPARE_CLINICS.map((c, i) => {
+              const nl = nLabel(c.n);
+              return (
+                <div key={i} className="border border-gray-100 rounded-xl p-4 hover:shadow-sm transition-shadow">
+                  {/* クリニック名 */}
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <div className="text-gray-400 text-[10px]">{c.area}</div>
+                      <h3 className="text-gray-800 font-bold text-sm">{c.name}</h3>
+                    </div>
+                    <div className="text-teal-700 font-bold text-xs">{c.priceRange}</div>
+                  </div>
+
+                  {/* 比較バー */}
+                  <div className="space-y-2 mb-3">
+                    <CompareBar label="見積提示率" value={c.estimate} />
+                    <CompareBar label="追加費用の説明率" value={c.extraExplain} />
+                    <CompareBar label="リスク説明率" value={c.riskExplain} />
+                  </div>
+
+                  {/* 書面 + n数 */}
+                  <div className="flex items-center justify-between">
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full border ${c.document ? 'bg-teal-50 text-teal-700 border-teal-200' : 'bg-gray-50 text-gray-400 border-gray-200'}`}>
+                      書面交付 {c.document ? '✓' : '—'}
+                    </span>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${nl.bg} ${nl.color}`}>
+                      {nl.text}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
         {/* Trust badges */}
-        <div className="flex gap-2 mb-4 flex-wrap">
-          {['料金の透明性を審査', '投稿情報の改ざん禁止'].map((label) => (
-            <span key={label} className="bg-white/20 text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1">
-              <svg className="w-3 h-3 text-teal-300" fill="currentColor" viewBox="0 0 20 20">
+        <div className="flex gap-2 mb-5 flex-wrap justify-center">
+          {['料金の透明性を審査', '投稿情報の改ざん禁止', '広告費による順位操作なし'].map((label) => (
+            <span key={label} className="bg-white text-gray-500 text-[11px] px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-gray-100">
+              <svg className="w-3.5 h-3.5 text-teal-600" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
               {label}
             </span>
           ))}
         </div>
+      </div>
 
-        {/* 調査数値バナー */}
-        <div className="bg-white/10 rounded-xl p-3 mb-4 grid grid-cols-3 gap-2 text-center">
-          <div>
-            <div className="text-white font-bold text-lg leading-tight">{clinics.length}院</div>
-            <div className="text-teal-200 text-[9px] leading-tight mt-0.5">掲載クリニック数</div>
-          </div>
-          <div>
-            <div className="text-white font-bold text-lg leading-tight">
-              {clinics.filter(c => c.feeMin || c.feeMax).length}院
-            </div>
-            <div className="text-teal-200 text-[9px] leading-tight mt-0.5">料金情報あり</div>
-          </div>
-          <div>
-            <div className="text-white font-bold text-lg leading-tight">
-              {clinics.filter(c => c.totalFee).length}院
-            </div>
-            <div className="text-teal-200 text-[9px] leading-tight mt-0.5">トータルフィー制</div>
-          </div>
-        </div>
-
+      {/* ===== 検索・一覧 ===== */}
+      <div id="clinics" className="w-full max-w-6xl mx-auto px-3 sm:px-6">
         {/* Search bar */}
-        <div className="relative">
+        <div className="relative mb-4">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
@@ -170,15 +258,13 @@ export default function ClinicList() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="クリニック名・駅名・エリアで検索"
-            className="w-full pl-9 pr-4 rounded-lg text-sm bg-white text-gray-800 placeholder-gray-400 outline-none shadow"
+            className="w-full pl-9 pr-4 rounded-lg text-sm bg-white text-gray-800 placeholder-gray-400 outline-none shadow-sm border border-gray-100"
             style={{ minHeight: '44px' }}
           />
         </div>
-      </div>
 
-      <div className="w-full max-w-6xl mx-auto px-3 sm:px-6">
         {/* Filter row */}
-        <div className="flex gap-2 mt-4 mb-3 overflow-x-auto pb-1 scrollbar-hide">
+        <div className="flex gap-2 mb-3 overflow-x-auto pb-1 scrollbar-hide">
           {FILTERS.map((f) => (
             <button
               key={f}
@@ -233,7 +319,7 @@ export default function ClinicList() {
               条件に合うクリニックが見つかりませんでした
             </div>
           ) : (
-            filtered.map((clinic, idx) => (
+            filtered.map((clinic) => (
               <Link to={`/clinic/${clinic.id}`} key={clinic.id}>
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
                   {/* Clinic header */}
@@ -306,17 +392,28 @@ export default function ClinicList() {
         </div>
       </div>
 
-      {/* フッター */}
-      <footer className="w-full py-8 pb-10 border-t border-gray-200 mt-4">
-        <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-4">
-          <Link to="/policy" className="text-gray-400 text-sm hover:text-gray-600">投稿情報掲載基準</Link>
-          <Link to="/for-clinics" className="text-gray-400 text-sm hover:text-gray-600">クリニックの方へ</Link>
-          <a href="/contact.php" className="text-gray-400 text-sm hover:text-gray-600">お問い合わせ</a>
+      {/* ===== MedBaseエコシステム共通フッター ===== */}
+      <footer className="w-full bg-[#0f1b2d] text-[#94a3b8] mt-8">
+        <div className="max-w-5xl mx-auto px-4 py-10">
+          <p className="text-center text-xs leading-relaxed mb-6">
+            MedBaseエコシステムは、ClinicCompass・矯正データラボ・MedBaseを通じて、<br className="hidden sm:inline" />
+            自由診療の比較可能性と透明性の向上を目指しています。
+          </p>
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-6">
+            <a href="https://medbase.jp" target="_blank" rel="noopener noreferrer" className="text-[#94a3b8] text-sm hover:text-white transition-colors">MedBase</a>
+            <a href="https://cliniccompass.jp" className="text-white text-sm font-semibold">ClinicCompass</a>
+            <a href="https://kyoseidatalab.jp" target="_blank" rel="noopener noreferrer" className="text-[#94a3b8] text-sm hover:text-white transition-colors">矯正データラボ</a>
+          </div>
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-5 border-t border-white/10 pt-5">
+            <Link to="/policy" className="text-[#64748b] text-xs hover:text-white transition-colors">投稿情報掲載基準</Link>
+            <Link to="/for-clinics" className="text-[#64748b] text-xs hover:text-white transition-colors">クリニックの方へ</Link>
+            <a href="/contact.php" className="text-[#64748b] text-xs hover:text-white transition-colors">お問い合わせ</a>
+            <button onClick={() => setShowCompany(true)} className="text-[#64748b] text-xs hover:text-white transition-colors bg-transparent border-none cursor-pointer">運営会社</button>
+          </div>
+          <p className="text-center text-[#64748b] text-[11px]">
+            &copy; 2026 ClinicCompass by MedBase. All rights reserved.
+          </p>
         </div>
-        <p className="text-center text-gray-400 text-xs">
-          © 2026 ClinicCompass by MedBase.
-          <button onClick={() => setShowCompany(true)} className="text-gray-400 text-xs hover:text-gray-600 underline bg-transparent border-none cursor-pointer">運営会社</button>
-        </p>
       </footer>
 
       {/* 運営会社モーダル */}
