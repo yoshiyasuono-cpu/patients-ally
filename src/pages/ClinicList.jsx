@@ -2,11 +2,10 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { mapFromDb } from '../lib/seedClinics';
-import Header from '../components/Header';
 
 const FILTERS = ['すべて', 'ワイヤー矯正', 'マウスピース矯正'];
 
-// エリアグループ定義（グループ名 → 含まれる区/市）
+// エリアグループ定義
 const AREA_GROUPS = {
   '都心エリア': ['千代田区', '中央区', '港区'],
   '渋谷・表参道エリア': ['渋谷区', '目黒区'],
@@ -17,7 +16,6 @@ const AREA_GROUPS = {
   '立川・多摩エリア': ['立川市', '八王子市', '町田市', '調布市', '府中市', '昭島市', '稲城市', '国分寺市', '国立市', '小平市', '日野市', '西東京市'],
 };
 
-// セレクトボックス用の選択肢（グループ → 個別区市）
 const AREA_OPTIONS = [
   { label: 'すべて', value: 'すべて' },
   { label: '--- エリアで探す ---', value: '', disabled: true },
@@ -36,34 +34,67 @@ const BUDGETS = ['指定なし', '〜80万円', '80〜100万円', '100〜120万�
 
 // n数表示ルール（トップ・詳細共通）
 export function nLabel(n) {
-  if (n == null || n <= 2) return { text: '調査中', color: 'text-gray-400', bg: 'bg-gray-100' };
-  if (n <= 9) return { text: `参考値（n=${n}）`, color: 'text-amber-600', bg: 'bg-amber-50' };
-  return { text: `信頼度の高いデータ（n=${n}）`, color: 'text-teal-700', bg: 'bg-teal-50' };
+  if (n == null || n <= 2) return { text: '調査中', color: '#94a3b8', bg: '#f1f5f9' };
+  if (n <= 9) return { text: `参考値（n=${n}）`, color: '#d97706', bg: '#fffbeb' };
+  return { text: `信頼度の高いデータ（n=${n}）`, color: '#0f766e', bg: '#f0fdfa' };
 }
 
-// ダミー比較カードデータ
-const COMPARE_CLINICS = [
+// バーの色判定
+function barColor(v) {
+  if (v >= 80) return '#1a9e75';
+  if (v >= 50) return '#f59e0b';
+  return '#ef4444';
+}
+
+// 比較デモデータ
+const DEMO_CARDS = [
   {
-    name: 'A矯正歯科',
-    area: '渋谷区',
-    priceRange: '80〜120万円',
-    estimate: 95, extraExplain: 90, riskExplain: 85, document: true, n: 14,
-  },
-  {
-    name: 'B矯正歯科',
+    name: '立川北・なお矯正歯科',
     area: '立川市',
-    priceRange: '39〜140万円',
-    estimate: 100, extraExplain: 80, riskExplain: 80, document: true, n: 6,
+    sub: 'ワイヤー・マウスピース',
+    score: 82,
+    scoreBg: '#1a9e75',
+    metrics: [
+      { label: '見積提示率', value: 100 },
+      { label: '追加費用の説明', value: 88 },
+      { label: 'リスク説明率', value: 88 },
+      { label: '契約圧力の低さ', value: 95 },
+    ],
+    n: 24,
+    verified: true,
   },
   {
-    name: 'C矯正歯科',
+    name: '渋谷スマイル矯正歯科',
+    area: '渋谷区',
+    sub: 'ワイヤー・マウスピース',
+    score: 71,
+    scoreBg: '#0f3d5c',
+    metrics: [
+      { label: '見積提示率', value: 85 },
+      { label: '追加費用の説明', value: 60 },
+      { label: 'リスク説明率', value: 70 },
+      { label: '契約圧力の低さ', value: 75 },
+    ],
+    n: 7,
+    verified: false,
+  },
+  {
+    name: '新宿矯正歯科クリニック',
     area: '新宿区',
-    priceRange: '70〜100万円',
-    estimate: 70, extraExplain: 50, riskExplain: 40, document: false, n: 2,
+    sub: 'マウスピース専門',
+    score: null,
+    scoreBg: '#94a3b8',
+    metrics: [
+      { label: '見積提示率', value: null },
+      { label: '追加費用の説明', value: null },
+      { label: 'リスク説明率', value: null },
+      { label: '契約圧力の低さ', value: null },
+    ],
+    n: 1,
+    verified: false,
   },
 ];
 
-// エリアマッチ判定（グループまたは個別区市）
 function matchesArea(clinicArea, selectedArea) {
   if (selectedArea === 'すべて') return true;
   if (AREA_GROUPS[selectedArea]) {
@@ -72,19 +103,22 @@ function matchesArea(clinicArea, selectedArea) {
   return clinicArea === selectedArea;
 }
 
-// 比較項目のバー表示
-function CompareBar({ label, value, suffix = '%' }) {
-  const barColor = value >= 80 ? 'bg-teal-600' : value >= 50 ? 'bg-amber-500' : 'bg-gray-300';
-  return (
-    <div className="flex items-center gap-2">
-      <span className="text-gray-500 text-[11px] w-28 flex-shrink-0">{label}</span>
-      <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
-        <div className={`h-full rounded-full ${barColor}`} style={{ width: `${Math.min(value, 100)}%` }} />
-      </div>
-      <span className="text-gray-700 text-xs font-semibold w-10 text-right">{value}{suffix}</span>
-    </div>
-  );
-}
+// ============================
+// スタイル定数
+// ============================
+const S = {
+  font: "'Hiragino Kaku Gothic ProN', 'Helvetica Neue', Arial, sans-serif",
+  navy: '#0f3d5c',
+  teal: '#1a9e75',
+  accent: '#4dd4a8',
+  heroBg1: '#0a2e44',
+  heroBg2: '#0f3d5c',
+  pageBg: '#f5f7fa',
+  cardBg: '#ffffff',
+  border: '#e2e8f0',
+  muted: '#94a3b8',
+  text: '#0f1b2d',
+};
 
 export default function ClinicList() {
   const [clinics, setClinics] = useState([]);
@@ -102,7 +136,6 @@ export default function ClinicList() {
       .order('id')
       .then(({ data, error }) => {
         if (!error && data) {
-          // fee_minがある医院を上位に表示（透明性データ充実順）
           const mapped = data.map(mapFromDb);
           mapped.sort((a, b) => {
             const aHasFee = a.feeMin != null ? 0 : 1;
@@ -143,114 +176,253 @@ export default function ClinicList() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-400 text-sm">読み込み中...</p>
+      <div style={{ minHeight: '100vh', background: S.pageBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: S.font }}>
+        <p style={{ color: S.muted, fontSize: 14 }}>読み込み中...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-28">
-      <Header />
+    <div style={{ minHeight: '100vh', background: S.pageBg, fontFamily: S.font, color: S.text, paddingBottom: 80 }}>
 
-      {/* ===== Hero ===== */}
-      <div className="bg-gradient-to-br from-[#0f1b2d] to-[#1a2a42] px-4 pt-8 pb-10 w-full">
-        <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-white text-2xl md:text-3xl font-bold leading-tight mb-3">
-            自由診療を、<br className="md:hidden" />比較可能・説明可能・検証可能に。
+      {/* ============ ナビゲーション ============ */}
+      <nav style={{
+        position: 'sticky', top: 0, zIndex: 100,
+        background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(8px)',
+        borderBottom: `1px solid ${S.border}`,
+      }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          {/* ロゴ */}
+          <a href="/" style={{ textDecoration: 'none', fontSize: 20, fontWeight: 700, letterSpacing: '0.01em' }}>
+            <span style={{ color: S.navy }}>Clinic</span>
+            <span style={{ color: S.teal }}>Compass</span>
+          </a>
+          {/* 中央リンク */}
+          <div style={{ display: 'flex', gap: 28, alignItems: 'center' }}>
+            <a href="#clinics" style={{ color: S.muted, textDecoration: 'none', fontSize: 13, fontWeight: 500 }}>クリニックを探す</a>
+            <a href="https://medbase.jp/#problems" target="_blank" rel="noopener noreferrer" style={{ color: S.muted, textDecoration: 'none', fontSize: 13, fontWeight: 500 }}>比較の仕組み</a>
+            <a href="https://kyoseidatalab.jp" target="_blank" rel="noopener noreferrer" style={{ color: S.muted, textDecoration: 'none', fontSize: 13, fontWeight: 500 }}>データラボ</a>
+          </div>
+          {/* 右ボタン */}
+          <a href="https://kyoseidatalab.jp/survey/" target="_blank" rel="noopener noreferrer" style={{
+            background: S.navy, color: '#fff', fontSize: 12, fontWeight: 700,
+            padding: '8px 18px', borderRadius: 6, textDecoration: 'none',
+          }}>アンケートに協力する</a>
+        </div>
+      </nav>
+
+      {/* ============ ヒーロー ============ */}
+      <section style={{
+        background: `linear-gradient(135deg, ${S.heroBg1} 0%, ${S.heroBg2} 100%)`,
+        padding: '64px 24px 56px', textAlign: 'center',
+      }}>
+        <div style={{ maxWidth: 800, margin: '0 auto' }}>
+          {/* バッジ */}
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            background: 'rgba(26,158,117,0.2)', border: '1px solid rgba(26,158,117,0.4)',
+            color: S.accent, fontSize: 12, fontWeight: 600,
+            padding: '6px 18px', borderRadius: 24, marginBottom: 28,
+          }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: S.accent }} />
+            自由診療比較インフラ — フェーズ1稼働中
+          </div>
+
+          {/* H1 */}
+          <h1 style={{ color: '#fff', fontSize: 32, fontWeight: 700, lineHeight: 1.5, marginBottom: 16, letterSpacing: '0.02em' }}>
+            自由診療を、<br />
+            <span style={{ color: S.accent }}>比較可能</span>・
+            <span style={{ color: S.accent }}>説明可能</span>・
+            <span style={{ color: S.accent }}>検証可能</span>に。
           </h1>
-          <p className="text-[#94a3b8] text-sm md:text-base leading-relaxed mb-5">
-            価格、追加費用、説明の丁寧さまで。<br className="md:hidden" />矯正治療を"納得して選ぶ"ための比較サイト。
+
+          {/* サブコピー */}
+          <p style={{ color: S.muted, fontSize: 15, lineHeight: 1.9, marginBottom: 36, maxWidth: 560, margin: '0 auto 36px' }}>
+            価格、追加費用、説明の丁寧さまで。矯正治療を"納得して選ぶ"ための比較サイト。<br />口コミではなく構造化データで選ぶ。
           </p>
 
-          {/* 進捗表示 */}
-          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 text-white/80 text-xs font-medium px-4 py-2 rounded-full mb-6">
-            <span className="w-2 h-2 bg-teal-400 rounded-full animate-pulse" />
-            現在{clinics.length}院掲載・アンケート収集中
+          {/* 数値ブロック */}
+          <div style={{
+            display: 'flex', justifyContent: 'center', gap: 0,
+            background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: 12, marginBottom: 36, maxWidth: 600, margin: '0 auto 36px',
+          }}>
+            {[
+              { num: '208', label: '掲載クリニック数', accent: false },
+              { num: '4', label: '比較軸', accent: true },
+              { num: '集計中', label: 'アンケート回収数', accent: false },
+              { num: '0円', label: '患者利用料', accent: true },
+            ].map((item, i) => (
+              <div key={i} style={{
+                flex: 1, padding: '20px 8px', textAlign: 'center',
+                borderRight: i < 3 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+              }}>
+                <div style={{ fontSize: item.num === '集計中' ? 16 : 28, fontWeight: 700, color: item.accent ? S.accent : '#fff', lineHeight: 1.2 }}>
+                  {item.num}
+                </div>
+                <div style={{ fontSize: 11, color: S.muted, marginTop: 4 }}>{item.label}</div>
+              </div>
+            ))}
           </div>
 
           {/* CTA 3本 */}
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <a href="#clinics" className="bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold py-3 px-6 rounded-lg transition-colors">
-              クリニックを探す
-            </a>
-            <a href="https://medbase.jp/#problems" target="_blank" rel="noopener noreferrer"
-              className="bg-white/10 hover:bg-white/20 text-white text-sm font-medium py-3 px-6 rounded-lg border border-white/20 transition-colors">
-              比較の仕組みを見る
-            </a>
-            <a href="https://kyoseidatalab.jp/survey/" target="_blank" rel="noopener noreferrer"
-              className="bg-white/10 hover:bg-white/20 text-white text-sm font-medium py-3 px-6 rounded-lg border border-white/20 transition-colors">
-              アンケートに協力する
-            </a>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <a href="#clinics" style={{
+              background: S.teal, color: '#fff', fontSize: 14, fontWeight: 700,
+              padding: '14px 28px', borderRadius: 8, textDecoration: 'none',
+              border: 'none',
+            }}>クリニックを探す</a>
+            <a href="https://kyoseidatalab.jp/survey/" target="_blank" rel="noopener noreferrer" style={{
+              background: 'transparent', color: S.accent, fontSize: 14, fontWeight: 600,
+              padding: '14px 28px', borderRadius: 8, textDecoration: 'none',
+              border: `1.5px solid ${S.accent}`,
+            }}>アンケートに協力する</a>
+            <a href="https://medbase.jp/#problems" target="_blank" rel="noopener noreferrer" style={{
+              background: 'transparent', color: 'rgba(255,255,255,0.8)', fontSize: 14, fontWeight: 500,
+              padding: '14px 28px', borderRadius: 8, textDecoration: 'none',
+              border: '1.5px solid rgba(255,255,255,0.25)',
+            }}>比較の仕組みを見る</a>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* ===== 比較カードセクション ===== */}
-      <div className="w-full max-w-6xl mx-auto px-3 sm:px-6 -mt-4">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-gray-800 font-bold text-base">透明性データで比較する</h2>
-              <p className="text-gray-400 text-xs mt-0.5">比較軸：見積提示率 / 追加費用の事前説明率 / リスク説明率 / 書面交付 / n数</p>
+      {/* ============ 比較デモセクション ============ */}
+      <section style={{ background: '#fff', padding: '64px 24px' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          {/* ラベル + タイトル */}
+          <p style={{ fontSize: 11, fontWeight: 700, color: S.teal, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10 }}>
+            比較デモ — DEMO DATA
+          </p>
+          <h2 style={{ fontSize: 24, fontWeight: 700, color: S.text, marginBottom: 8 }}>
+            こんなふうに比較できます
+          </h2>
+          <p style={{ fontSize: 14, color: S.muted, marginBottom: 28, lineHeight: 1.8 }}>
+            口コミの数ではなく、"説明の丁寧さ"と"追加費用の透明性"を数値で比較。
+          </p>
+
+          {/* 信頼度ルール説明バー */}
+          <div style={{
+            display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 16,
+            border: `1.5px solid ${S.border}`, borderRadius: 10, padding: '12px 20px', marginBottom: 24,
+            background: '#fafbfc',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ background: '#f0fdfa', color: '#0f766e', fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 12 }}>n=10以上</span>
+              <span style={{ fontSize: 12, color: S.muted }}>信頼度の高いデータ</span>
             </div>
-            <span className="text-[10px] text-gray-400 bg-gray-50 px-2 py-1 rounded">サンプル表示</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ background: '#fffbeb', color: '#d97706', fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 12 }}>n=3〜9</span>
+              <span style={{ fontSize: 12, color: S.muted }}>参考値</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ background: '#f1f5f9', color: '#94a3b8', fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 12 }}>n=0〜2</span>
+              <span style={{ fontSize: 12, color: S.muted }}>調査中</span>
+            </div>
+            <span style={{ marginLeft: 'auto', fontSize: 11, color: '#b0bec5' }}>透明性スコアや比較順位は課金で変わりません</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {COMPARE_CLINICS.map((c, i) => {
-              const nl = nLabel(c.n);
+          {/* 比較カード3枚 */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+            {DEMO_CARDS.map((card, ci) => {
+              const nl = nLabel(card.n);
+              const isBlank = card.score === null;
               return (
-                <div key={i} className="border border-gray-100 rounded-xl p-4 hover:shadow-sm transition-shadow">
-                  {/* クリニック名 */}
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <div className="text-gray-400 text-[10px]">{c.area}</div>
-                      <h3 className="text-gray-800 font-bold text-sm">{c.name}</h3>
+                <div key={ci} style={{
+                  background: S.cardBg, border: `1.5px solid ${S.border}`, borderRadius: 12,
+                  padding: 0, overflow: 'hidden',
+                  opacity: isBlank ? 0.7 : 1,
+                }}>
+                  {/* カードヘッダー */}
+                  <div style={{ padding: '20px 20px 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                      <div>
+                        <div style={{ fontSize: 11, color: S.muted }}>{card.area}</div>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: S.text }}>{card.name}</div>
+                        <div style={{ fontSize: 11, color: S.muted, marginTop: 2 }}>{card.sub}</div>
+                      </div>
+                      {/* スコアバッジ */}
+                      <div style={{
+                        background: card.scoreBg, color: '#fff',
+                        width: 52, height: 52, borderRadius: 12,
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                        flexShrink: 0,
+                      }}>
+                        <span style={{ fontSize: isBlank ? 10 : 20, fontWeight: 700, lineHeight: 1 }}>
+                          {isBlank ? '調査中' : card.score}
+                        </span>
+                        {!isBlank && <span style={{ fontSize: 9, opacity: 0.8 }}>点</span>}
+                      </div>
                     </div>
-                    <div className="text-teal-700 font-bold text-xs">{c.priceRange}</div>
                   </div>
 
-                  {/* 比較バー */}
-                  <div className="space-y-2 mb-3">
-                    <CompareBar label="見積提示率" value={c.estimate} />
-                    <CompareBar label="追加費用の説明率" value={c.extraExplain} />
-                    <CompareBar label="リスク説明率" value={c.riskExplain} />
+                  {/* 指標バー */}
+                  <div style={{ padding: '0 20px 16px' }}>
+                    {card.metrics.map((m, mi) => (
+                      <div key={mi} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                        <span style={{ fontSize: 11, color: S.muted, width: 110, flexShrink: 0 }}>{m.label}</span>
+                        <div style={{ flex: 1, background: '#f1f5f9', borderRadius: 4, height: 5, overflow: 'hidden' }}>
+                          {m.value != null && (
+                            <div style={{ height: '100%', borderRadius: 4, background: barColor(m.value), width: `${m.value}%` }} />
+                          )}
+                        </div>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: m.value != null ? S.text : S.muted, width: 36, textAlign: 'right' }}>
+                          {m.value != null ? `${m.value}%` : '—'}
+                        </span>
+                      </div>
+                    ))}
                   </div>
 
-                  {/* 書面 + n数 */}
-                  <div className="flex items-center justify-between">
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full border ${c.document ? 'bg-teal-50 text-teal-700 border-teal-200' : 'bg-gray-50 text-gray-400 border-gray-200'}`}>
-                      書面交付 {c.document ? '✓' : '—'}
+                  {/* カードフッター */}
+                  <div style={{
+                    background: '#fafbfc', borderTop: `1px solid ${S.border}`,
+                    padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: nl.color, background: nl.bg, padding: '3px 10px', borderRadius: 12 }}>
+                      n={card.n}
                     </span>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${nl.bg} ${nl.color}`}>
-                      {nl.text}
+                    <span style={{ fontSize: 11, color: S.muted }}>
+                      {card.verified ? '運営確認済み' : card.n <= 2 ? '回答数が少ないため非表示' : '参考値'}
                     </span>
                   </div>
                 </div>
               );
             })}
           </div>
-        </div>
 
-        {/* Trust badges */}
-        <div className="flex gap-2 mb-5 flex-wrap justify-center">
-          {['料金の透明性を審査', '投稿情報の改ざん禁止', '広告費による順位操作なし'].map((label) => (
-            <span key={label} className="bg-white text-gray-500 text-[11px] px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-gray-100">
-              <svg className="w-3.5 h-3.5 text-teal-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              {label}
-            </span>
-          ))}
-        </div>
-      </div>
+          {/* デモ注釈 */}
+          <p style={{ fontSize: 11, color: '#b0bec5', textAlign: 'center', marginTop: 16 }}>
+            ※ すべてデモデータです。実データは今後順次公開予定。
+          </p>
 
-      {/* ===== 検索・一覧 ===== */}
-      <div id="clinics" className="w-full max-w-6xl mx-auto px-3 sm:px-6">
-        {/* Search bar */}
-        <div className="relative mb-4">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {/* CTAストリップ */}
+          <div style={{
+            background: S.navy, borderRadius: 12, padding: '28px 32px', marginTop: 32,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16,
+          }}>
+            <div>
+              <div style={{ color: '#fff', fontSize: 16, fontWeight: 700, marginBottom: 4 }}>208院のデータを見る</div>
+              <div style={{ color: S.muted, fontSize: 13 }}>エリア・料金・治療方法で絞り込んで比較できます</div>
+            </div>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <a href="#clinics" style={{
+                background: S.teal, color: '#fff', fontSize: 13, fontWeight: 700,
+                padding: '12px 24px', borderRadius: 8, textDecoration: 'none', border: 'none',
+              }}>クリニックを探す</a>
+              <a href="https://kyoseidatalab.jp/survey/" target="_blank" rel="noopener noreferrer" style={{
+                background: 'transparent', color: S.accent, fontSize: 13, fontWeight: 600,
+                padding: '12px 24px', borderRadius: 8, textDecoration: 'none',
+                border: `1.5px solid ${S.accent}`,
+              }}>アンケートに協力する</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============ 検索・一覧 ============ */}
+      <section id="clinics" style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 24px 0' }}>
+        {/* 検索バー */}
+        <div style={{ position: 'relative', marginBottom: 16 }}>
+          <svg style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: S.muted }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
@@ -258,131 +430,111 @@ export default function ClinicList() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="クリニック名・駅名・エリアで検索"
-            className="w-full pl-9 pr-4 rounded-lg text-sm bg-white text-gray-800 placeholder-gray-400 outline-none shadow-sm border border-gray-100"
-            style={{ minHeight: '44px' }}
+            style={{
+              width: '100%', padding: '12px 12px 12px 36px', borderRadius: 10,
+              fontSize: 14, background: '#fff', color: S.text,
+              border: `1.5px solid ${S.border}`, outline: 'none',
+              fontFamily: S.font,
+            }}
           />
         </div>
 
-        {/* Filter row */}
-        <div className="flex gap-2 mb-3 overflow-x-auto pb-1 scrollbar-hide">
+        {/* フィルター */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 12, overflowX: 'auto' }}>
           {FILTERS.map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`flex-shrink-0 text-sm px-4 rounded-full border transition-all flex items-center ${
-                filter === f
-                  ? 'bg-teal-700 text-white border-teal-700'
-                  : 'bg-white text-gray-600 border-gray-200'
-              }`}
-              style={{ minHeight: '44px' }}
-            >
-              {f}
-            </button>
+              style={{
+                flexShrink: 0, fontSize: 13, padding: '10px 20px', borderRadius: 24,
+                border: `1.5px solid ${filter === f ? S.teal : S.border}`,
+                background: filter === f ? S.teal : '#fff',
+                color: filter === f ? '#fff' : '#64748b',
+                fontWeight: filter === f ? 700 : 400,
+                cursor: 'pointer', fontFamily: S.font,
+              }}
+            >{f}</button>
           ))}
         </div>
 
-        {/* Sub filters */}
-        <div className="flex gap-2 mb-4">
+        {/* エリア・予算フィルター */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
           <select
             value={area}
             onChange={(e) => setArea(e.target.value)}
-            className="flex-1 text-sm border border-gray-200 rounded-lg px-2 bg-white text-gray-700 outline-none"
-            style={{ minHeight: '44px' }}
+            style={{ flex: 1, fontSize: 13, padding: '10px 8px', borderRadius: 10, border: `1.5px solid ${S.border}`, background: '#fff', color: '#64748b', outline: 'none', fontFamily: S.font }}
           >
             {AREA_OPTIONS.map((opt, i) =>
-              opt.disabled ? (
-                <option key={i} disabled value="">{opt.label}</option>
-              ) : (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              )
+              opt.disabled ? <option key={i} disabled value="">{opt.label}</option>
+                : <option key={opt.value} value={opt.value}>{opt.label}</option>
             )}
           </select>
           <select
             value={budget}
             onChange={(e) => setBudget(e.target.value)}
-            className="flex-1 text-sm border border-gray-200 rounded-lg px-2 bg-white text-gray-700 outline-none"
-            style={{ minHeight: '44px' }}
+            style={{ flex: 1, fontSize: 13, padding: '10px 8px', borderRadius: 10, border: `1.5px solid ${S.border}`, background: '#fff', color: '#64748b', outline: 'none', fontFamily: S.font }}
           >
             {BUDGETS.map((b) => <option key={b}>{b}</option>)}
           </select>
         </div>
 
-        {/* Result count */}
-        <div className="text-xs text-gray-500 mb-3">
+        {/* 件数 */}
+        <div style={{ fontSize: 12, color: S.muted, marginBottom: 16 }}>
           {filtered.length}件のクリニックが見つかりました
         </div>
 
-        {/* Clinic cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* クリニックカード */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 16 }}>
           {filtered.length === 0 ? (
-            <div className="text-center text-gray-400 py-12 text-sm">
+            <div style={{ textAlign: 'center', color: S.muted, padding: '48px 0', fontSize: 14 }}>
               条件に合うクリニックが見つかりませんでした
             </div>
           ) : (
             filtered.map((clinic) => (
-              <Link to={`/clinic/${clinic.id}`} key={clinic.id}>
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
-                  {/* Clinic header */}
-                  <div className="p-3 pb-2 flex gap-3">
-                    {/* イニシャルアイコン */}
-                    <div className="flex-shrink-0 w-[80px] h-[80px] md:w-[100px] md:h-[100px] rounded-lg bg-teal-50 flex items-center justify-center">
-                      <span className="text-teal-700 font-bold text-2xl">{clinic.name.charAt(0)}</span>
+              <Link to={`/clinic/${clinic.id}`} key={clinic.id} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <div style={{
+                  background: S.cardBg, borderRadius: 12, border: `1.5px solid ${S.border}`,
+                  overflow: 'hidden', transition: 'box-shadow 0.2s',
+                }}
+                  onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)'}
+                  onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}
+                >
+                  <div style={{ padding: 16, display: 'flex', gap: 12 }}>
+                    {/* イニシャル */}
+                    <div style={{
+                      width: 72, height: 72, borderRadius: 10, background: '#f0fdfa',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                    }}>
+                      <span style={{ color: S.teal, fontWeight: 700, fontSize: 24 }}>{clinic.name.charAt(0)}</span>
                     </div>
-
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between mb-1">
-                        <div className="flex-1 min-w-0 pr-1">
-                          <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                            <span className="text-gray-400 text-[10px]">{clinic.area}</span>
-                          </div>
-                          <h2 className="text-gray-900 font-bold text-base leading-tight line-clamp-2">{clinic.name}</h2>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                        <div>
+                          <span style={{ fontSize: 10, color: S.muted }}>{clinic.area}</span>
+                          <div style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.3 }}>{clinic.name}</div>
                         </div>
-                        <div className="flex-shrink-0 text-right ml-1">
-                          <div className="text-teal-700 font-bold text-sm">{clinic.priceRange}</div>
-                          <div className="text-gray-400 text-[9px]">料金目安</div>
+                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                          <div style={{ fontSize: 14, fontWeight: 700, color: S.teal }}>{clinic.priceRange}</div>
+                          <div style={{ fontSize: 9, color: S.muted }}>料金目安</div>
                         </div>
                       </div>
-
-                      {/* 対応治療 */}
-                      <div className="flex items-center gap-1 mb-1 flex-wrap">
-                        {clinic.treatments.length > 0 ? (
-                          clinic.treatments.map((t) => (
-                            <span key={t} className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                              {t}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="text-gray-400 text-[10px]">対応治療：情報収集中</span>
+                      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 4 }}>
+                        {clinic.treatments.length > 0 ? clinic.treatments.map((t) => (
+                          <span key={t} style={{ fontSize: 10, background: '#f1f5f9', color: '#64748b', padding: '2px 8px', borderRadius: 12 }}>{t}</span>
+                        )) : (
+                          <span style={{ fontSize: 10, color: S.muted }}>対応治療：情報収集中</span>
                         )}
                         {clinic.totalFee && (
-                          <span className="text-[10px] bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full border border-teal-200">
-                            トータルフィー制
-                          </span>
+                          <span style={{ fontSize: 10, background: '#f0fdfa', color: S.teal, padding: '2px 8px', borderRadius: 12, border: '1px solid #ccfbf1' }}>トータルフィー制</span>
                         )}
                       </div>
-
-                      {/* 最寄り駅 */}
-                      <p className="text-gray-400 text-xs line-clamp-1">
-                        {clinic.station || clinic.address}
-                      </p>
+                      <div style={{ fontSize: 11, color: S.muted }}>{clinic.station || clinic.address}</div>
                     </div>
                   </div>
-
-                  {/* Footer */}
-                  <div className="bg-gray-50 px-4 py-2 flex items-center justify-between border-t border-gray-100">
-                    <span className="text-gray-400 text-xs">
-                      <svg className="w-3 h-3 inline mr-0.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      {clinic.station || ''}
-                    </span>
-                    <span className="text-teal-700 text-sm font-semibold flex items-center gap-0.5">
-                      詳細を見る
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
+                  <div style={{ background: '#fafbfc', borderTop: `1px solid ${S.border}`, padding: '8px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 11, color: S.muted }}>{clinic.station || ''}</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: S.teal }}>
+                      詳細を見る →
                     </span>
                   </div>
                 </div>
@@ -390,64 +542,63 @@ export default function ClinicList() {
             ))
           )}
         </div>
-      </div>
+      </section>
 
-      {/* ===== MedBaseエコシステム共通フッター ===== */}
-      <footer className="w-full bg-[#0f1b2d] text-[#94a3b8] mt-8">
-        <div className="max-w-5xl mx-auto px-4 py-10">
-          <p className="text-center text-xs leading-relaxed mb-6">
-            MedBaseエコシステムは、ClinicCompass・矯正データラボ・MedBaseを通じて、<br className="hidden sm:inline" />
+      {/* ============ MedBaseエコシステム共通フッター ============ */}
+      <footer style={{ background: '#0a2e44', color: S.muted, marginTop: 48 }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 24px 32px', textAlign: 'center' }}>
+          <p style={{ fontSize: 12, lineHeight: 1.9, marginBottom: 24 }}>
+            MedBaseエコシステムは、ClinicCompass・矯正データラボ・MedBaseを通じて、<br />
             自由診療の比較可能性と透明性の向上を目指しています。
           </p>
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-6">
-            <a href="https://medbase.jp" target="_blank" rel="noopener noreferrer" className="text-[#94a3b8] text-sm hover:text-white transition-colors">MedBase</a>
-            <a href="https://cliniccompass.jp" className="text-white text-sm font-semibold">ClinicCompass</a>
-            <a href="https://kyoseidatalab.jp" target="_blank" rel="noopener noreferrer" className="text-[#94a3b8] text-sm hover:text-white transition-colors">矯正データラボ</a>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginBottom: 24, paddingBottom: 20, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+            <a href="https://medbase.jp" target="_blank" rel="noopener noreferrer" style={{ color: S.muted, fontSize: 13, textDecoration: 'none' }}>MedBase</a>
+            <a href="/" style={{ color: '#fff', fontSize: 13, textDecoration: 'none', fontWeight: 700 }}>ClinicCompass</a>
+            <a href="https://kyoseidatalab.jp" target="_blank" rel="noopener noreferrer" style={{ color: S.muted, fontSize: 13, textDecoration: 'none' }}>矯正データラボ</a>
           </div>
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-5 border-t border-white/10 pt-5">
-            <Link to="/policy" className="text-[#64748b] text-xs hover:text-white transition-colors">投稿情報掲載基準</Link>
-            <Link to="/for-clinics" className="text-[#64748b] text-xs hover:text-white transition-colors">クリニックの方へ</Link>
-            <a href="/contact.php" className="text-[#64748b] text-xs hover:text-white transition-colors">お問い合わせ</a>
-            <button onClick={() => setShowCompany(true)} className="text-[#64748b] text-xs hover:text-white transition-colors bg-transparent border-none cursor-pointer">運営会社</button>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 24, flexWrap: 'wrap', marginBottom: 20 }}>
+            <Link to="/policy" style={{ color: '#64748b', fontSize: 12, textDecoration: 'none' }}>投稿情報掲載基準</Link>
+            <Link to="/for-clinics" style={{ color: '#64748b', fontSize: 12, textDecoration: 'none' }}>クリニックの方へ</Link>
+            <a href="/contact.php" style={{ color: '#64748b', fontSize: 12, textDecoration: 'none' }}>お問い合わせ</a>
+            <button onClick={() => setShowCompany(true)} style={{ color: '#64748b', fontSize: 12, background: 'none', border: 'none', cursor: 'pointer', fontFamily: S.font }}>運営会社</button>
           </div>
-          <p className="text-center text-[#64748b] text-[11px]">
-            &copy; 2026 ClinicCompass by MedBase. All rights reserved.
-          </p>
+          <p style={{ fontSize: 11, color: '#475569' }}>&copy; 2026 ClinicCompass by MedBase. All rights reserved.</p>
         </div>
       </footer>
 
       {/* 運営会社モーダル */}
       {showCompany && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={() => setShowCompany(false)}>
-          <div className="bg-white rounded-xl p-8 max-w-md w-[90%] relative" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setShowCompany(false)} className="absolute top-3 right-4 text-xl text-gray-400 hover:text-gray-700 bg-transparent border-none cursor-pointer">&times;</button>
-            <h3 className="font-bold text-base mb-4">運営会社</h3>
-            <div className="text-sm leading-8">
-              <p className="text-gray-400 text-xs">会社名</p><p>株式会社ユナイテッドプロモーションズ</p>
-              <p className="text-gray-400 text-xs mt-1">代表者</p><p>大野芳裕</p>
-              <p className="text-gray-400 text-xs mt-1">所在地</p><p>〒190-0012 東京都立川市曙町2-14-19 シュールビル6階</p>
-              <p className="text-gray-400 text-xs mt-1">TEL</p><p>042-519-3582</p>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setShowCompany(false)}>
+          <div style={{ background: '#fff', borderRadius: 12, padding: 32, maxWidth: 440, width: '90%', position: 'relative' }} onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowCompany(false)} style={{ position: 'absolute', top: 12, right: 16, background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: S.muted }}>&times;</button>
+            <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 16 }}>運営会社</h3>
+            <div style={{ fontSize: 14, lineHeight: 2.2 }}>
+              <div style={{ color: S.muted, fontSize: 12 }}>会社名</div><div>株式会社ユナイテッドプロモーションズ</div>
+              <div style={{ color: S.muted, fontSize: 12, marginTop: 4 }}>代表者</div><div>大野芳裕</div>
+              <div style={{ color: S.muted, fontSize: 12, marginTop: 4 }}>所在地</div><div>〒190-0012 東京都立川市曙町2-14-19 シュールビル6階</div>
+              <div style={{ color: S.muted, fontSize: 12, marginTop: 4 }}>TEL</div><div>042-519-3582</div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Fixed CTA button */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
-        <div className="max-w-5xl mx-auto p-3">
-          <p className="text-center text-xs text-gray-500 mb-1">
+      {/* Fixed CTA */}
+      <div style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0,
+        background: 'rgba(255,255,255,0.97)', borderTop: `1px solid ${S.border}`,
+        boxShadow: '0 -2px 16px rgba(0,0,0,0.06)', zIndex: 100, backdropFilter: 'blur(8px)',
+      }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '10px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <p style={{ fontSize: 12, color: S.muted, margin: 0 }}>
             どれを選べばいいかわからない方は
-            <a href="https://patient-mikata-lp.vercel.app" target="_blank" className="text-teal-700 font-bold underline ml-1">
-              無料コンシェルジュに相談 →
-            </a>
+            <Link to="/consult" style={{ color: S.teal, fontWeight: 700, marginLeft: 4, textDecoration: 'none' }}>無料コンシェルジュに相談 →</Link>
           </p>
-          <Link to="/consult">
-            <button className="w-full bg-gradient-to-r from-teal-600 to-teal-700 text-white py-3.5 rounded-xl font-bold text-sm shadow-md flex items-center justify-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
-              無料相談はこちら（48時間以内にご連絡）
-            </button>
+          <Link to="/consult" style={{ textDecoration: 'none' }}>
+            <button style={{
+              background: S.teal, color: '#fff', fontSize: 13, fontWeight: 700,
+              padding: '12px 24px', borderRadius: 8, border: 'none', cursor: 'pointer',
+              whiteSpace: 'nowrap', fontFamily: S.font,
+            }}>無料相談はこちら</button>
           </Link>
         </div>
       </div>
