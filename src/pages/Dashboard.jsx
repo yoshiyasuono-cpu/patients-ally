@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import {
   LineChart, Line, BarChart, Bar, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
+  ReferenceLine,
 } from 'recharts';
 
 // ================================================================
@@ -80,6 +82,12 @@ const improvements = [
     effect: '新患獲得率向上',
   },
 ];
+
+// セクション：自院 vs エリア平均 差分データ
+const gapData = competitorData.map(d => ({
+  subject: d.subject,
+  diff: d['自院'] - d['エリア平均'],
+}));
 
 // ================================================================
 // スタイル定数
@@ -168,6 +176,7 @@ function RankingLabel({ x, y, width, value, name, isSelf }) {
 // メインコンポーネント
 // ================================================================
 export default function Dashboard() {
+  const [doneActions, setDoneActions] = useState([]);
   const latestSelf = trendData[trendData.length - 1]['自院'];
   const prevSelf   = trendData[trendData.length - 2]['自院'];
   const latestAvg  = trendData[trendData.length - 1]['エリア平均'];
@@ -365,47 +374,122 @@ export default function Dashboard() {
           </div>
 
           {/* ============================================
-              セクションB：透明性改善提案
+              セクションB：透明性改善提案（カード形式）
+          ============================================ */}
+          <div>
+            <div style={{ ...card, paddingBottom: 8 }}>
+              <SectionHeader icon="📋" title="改善アクション" sub="優先度順・自動抽出" />
+            </div>
+            <div style={{ display: 'flex', gap: 16, marginTop: 12 }}>
+              {improvements.map((item, i) => {
+                const isDone = doneActions.includes(i);
+                return (
+                  <div key={i} style={{
+                    flex: 1,
+                    background: isDone ? '#F0F9F4' : C.card,
+                    border: isDone ? `1.5px solid ${C.good}` : '1px solid #E8ECF0',
+                    borderRadius: 12,
+                    padding: '20px 20px 16px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                    opacity: isDone ? 0.7 : 1,
+                    transition: 'all 0.3s ease',
+                    display: 'flex', flexDirection: 'column',
+                  }}>
+                    {/* ヘッダー：優先度バッジ + 期待効果 */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontSize: 18 }}>{item.icon}</span>
+                        <span style={{
+                          ...PRIORITY_BADGE[item.priority],
+                          fontSize: 11, fontWeight: 700,
+                          padding: '3px 12px', borderRadius: 20,
+                        }}>
+                          {item.label}
+                        </span>
+                      </div>
+                      <span style={{
+                        fontSize: 11, fontWeight: 600,
+                        background: '#EAF6F0', color: C.good,
+                        padding: '3px 10px', borderRadius: 20,
+                      }}>
+                        📈 {item.effect}
+                      </span>
+                    </div>
+                    {/* タイトル */}
+                    <p style={{
+                      fontSize: 14, fontWeight: 700, color: C.text,
+                      marginBottom: 8, lineHeight: 1.5,
+                      textDecoration: isDone ? 'line-through' : 'none',
+                    }}>
+                      {item.title}
+                    </p>
+                    {/* アクション説明 */}
+                    <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.75, marginBottom: 16, flex: 1 }}>
+                      → {item.action}
+                    </p>
+                    {/* 対応済みボタン */}
+                    <button
+                      onClick={() => {
+                        setDoneActions(prev =>
+                          prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i]
+                        );
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '8px 0',
+                        borderRadius: 8,
+                        border: isDone ? `1.5px solid ${C.good}` : '1.5px solid #D5D8DC',
+                        background: isDone ? C.good : 'transparent',
+                        color: isDone ? 'white' : C.muted,
+                        fontSize: 13, fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      {isDone ? '✓ 対応済み' : '対応済みにする'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ============================================
+              セクション：自院 vs エリア平均 差分グラフ
           ============================================ */}
           <div style={card}>
-            <SectionHeader icon="📋" title="改善アクション" sub="優先度順・自動抽出" />
-            <div style={{ display: 'flex', gap: 14 }}>
-              {improvements.map((item, i) => (
-                <div key={i} style={{
-                  flex: 1, background: '#F8F9FA',
-                  border: '1px solid #E8ECF0', borderRadius: 10,
-                  padding: '16px 18px', boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
-                }}>
-                  {/* 優先度バッジ */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                    <span style={{ fontSize: 16 }}>{item.icon}</span>
-                    <span style={{
-                      ...PRIORITY_BADGE[item.priority],
-                      fontSize: 11, fontWeight: 700,
-                      padding: '2px 10px', borderRadius: 20,
-                    }}>
-                      {item.label}
-                    </span>
-                  </div>
-                  {/* タイトル */}
-                  <p style={{ fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 8, lineHeight: 1.5 }}>
-                    {item.title}
-                  </p>
-                  {/* アクション */}
-                  <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.75, marginBottom: 10 }}>
-                    → {item.action}
-                  </p>
-                  {/* 効果バッジ */}
-                  <span style={{
-                    fontSize: 11, fontWeight: 600,
-                    background: '#EAF6F0', color: C.good,
-                    padding: '3px 10px', borderRadius: 20,
-                    display: 'inline-block',
-                  }}>
-                    📈 {item.effect}
-                  </span>
-                </div>
-              ))}
+            <SectionHeader icon="📊" title="競合との差分" sub="自院スコア − エリア平均（項目別）" />
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={gapData} layout="vertical" margin={{ top: 4, right: 30, bottom: 0, left: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" horizontal={false} />
+                <XAxis
+                  type="number"
+                  domain={[-30, 40]}
+                  tick={{ fontSize: 11, fill: C.muted }}
+                  tickFormatter={v => `${v > 0 ? '+' : ''}${v}`}
+                />
+                <YAxis type="category" dataKey="subject" tick={{ fontSize: 12, fill: C.muted }} width={110} />
+                <Tooltip
+                  contentStyle={{ fontSize: 12, borderRadius: 6, border: '1px solid #E0E0E0' }}
+                  formatter={(val) => [`${val > 0 ? '+' : ''}${val}%`, '差分']}
+                />
+                <ReferenceLine x={0} stroke="#CBD5E0" strokeWidth={1.5} />
+                <Bar dataKey="diff" name="自院 − エリア平均" radius={[0, 4, 4, 0]} barSize={18}>
+                  {gapData.map((entry, idx) => (
+                    <Cell key={idx} fill={entry.diff >= 0 ? C.self : C.average} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+            <div style={{ display: 'flex', gap: 20, justifyContent: 'center', marginTop: 8 }}>
+              <span style={{ fontSize: 11, color: C.muted, display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ width: 12, height: 12, background: C.self, borderRadius: 2, display: 'inline-block' }} />
+                自院が上回る項目
+              </span>
+              <span style={{ fontSize: 11, color: C.muted, display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ width: 12, height: 12, background: C.average, borderRadius: 2, display: 'inline-block' }} />
+                自院が下回る項目
+              </span>
             </div>
           </div>
 
