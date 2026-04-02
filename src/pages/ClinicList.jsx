@@ -248,7 +248,7 @@ export default function ClinicList() {
             borderRadius: 12, marginBottom: 36, maxWidth: 600, margin: '0 auto 36px',
           }}>
             {[
-              { num: '208', label: '掲載クリニック数', accent: false },
+              { num: '517', label: '掲載クリニック数', accent: false },
               { num: '4', label: '比較軸', accent: true },
               { num: '集計中', label: 'アンケート回収数', accent: false },
               { num: '0円', label: '患者利用料', accent: true },
@@ -400,7 +400,7 @@ export default function ClinicList() {
             display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16,
           }}>
             <div>
-              <div style={{ color: '#fff', fontSize: 16, fontWeight: 700, marginBottom: 4 }}>208院のデータを見る</div>
+              <div style={{ color: '#fff', fontSize: 16, fontWeight: 700, marginBottom: 4 }}>517院のデータを見る</div>
               <div style={{ color: S.muted, fontSize: 13 }}>エリア・料金・治療方法で絞り込んで比較できます</div>
             </div>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
