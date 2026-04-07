@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   LineChart, Line, BarChart, Bar, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -83,11 +83,47 @@ const improvements = [
   },
 ];
 
-// セクション：自院 vs エリア平均 差分データ
-const gapData = competitorData.map(d => ({
-  subject: d.subject,
-  diff: d['自院'] - d['エリア平均'],
-}));
+// 費用ギャップ：説明 vs 実際 の比較データ
+const costGapCompare = [
+  { range: '50万未満',  説明時: 4,  実際: 2 },
+  { range: '50〜70万',  説明時: 10, 実際: 4 },
+  { range: '70〜100万', 説明時: 15, 実際: 7 },
+  { range: '100万以上', 説明時: 14, 実際: 18 },
+];
+
+// 治療期間ギャップ：説明 vs 実際 の比較データ
+const durationGapCompare = [
+  { range: '6ヶ月未満',  説明時: 2, 実際: 1 },
+  { range: '6ヶ月〜1年', 説明時: 6, 実際: 3 },
+  { range: '1〜2年',     説明時: 9, 実際: 7 },
+  { range: '2〜3年',     説明時: 3, 実際: 4 },
+  { range: '3年以上',    説明時: 1, 実際: 2 },
+];
+
+// 治療体験指標
+const painData = [
+  { level: 'ほとんどなし', 件数: 5 },
+  { level: '少しあった', 件数: 8 },
+  { level: 'それなり', 件数: 4 },
+  { level: 'かなり', 件数: 1 },
+];
+const satisfactionResultData = [
+  { level: 'とても満足', 件数: 6 },
+  { level: 'まあ満足', 件数: 5 },
+  { level: 'どちらでも', 件数: 2 },
+  { level: 'やや不満', 件数: 1 },
+  { level: '不満', 件数: 0 },
+];
+
+// セクション：自院 vs エリア平均 差分データ（費用・期間ギャップ含む）
+const gapData = [
+  ...competitorData.map(d => ({
+    subject: d.subject,
+    diff: d['自院'] - d['エリア平均'],
+  })),
+  { subject: '費用乖離の少なさ', diff: 10 },
+  { subject: '期間延長の少なさ', diff: 3 },
+];
 
 // ================================================================
 // スタイル定数
@@ -133,15 +169,15 @@ function Stars({ n }) {
 
 function KpiCard({ icon, label, value, sub, valueColor }) {
   return (
-    <div style={{ ...card, flex: 1, minWidth: 0 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-        <span style={{ fontSize: 20 }}>{icon}</span>
-        <span style={{ fontSize: 12, color: C.muted, fontWeight: 600 }}>{label}</span>
+    <div style={{ ...card, minWidth: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+        <span style={{ fontSize: 18 }}>{icon}</span>
+        <span style={{ fontSize: 11, color: C.muted, fontWeight: 600 }}>{label}</span>
       </div>
-      <div style={{ fontSize: 32, fontWeight: 700, color: valueColor || C.self, lineHeight: 1.1 }}>
+      <div style={{ fontSize: 24, fontWeight: 700, color: valueColor || C.self, lineHeight: 1.1 }}>
         {value}
       </div>
-      <div style={{ fontSize: 12, color: C.muted, marginTop: 6 }}>{sub}</div>
+      <div style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>{sub}</div>
     </div>
   );
 }
@@ -177,6 +213,15 @@ function RankingLabel({ x, y, width, value, name, isSelf }) {
 // ================================================================
 export default function Dashboard() {
   const [doneActions, setDoneActions] = useState([]);
+  const [sideOpen, setSideOpen] = useState(false);
+  const [winW, setWinW] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+  useEffect(() => {
+    const h = () => setWinW(window.innerWidth);
+    window.addEventListener('resize', h);
+    return () => window.removeEventListener('resize', h);
+  }, []);
+  const isMobile = winW < 768;
+  const isTablet = winW >= 768 && winW < 1024;
   const latestSelf = trendData[trendData.length - 1]['自院'];
   const prevSelf   = trendData[trendData.length - 2]['自院'];
   const latestAvg  = trendData[trendData.length - 1]['エリア平均'];
@@ -187,43 +232,59 @@ export default function Dashboard() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: C.bg, fontFamily: "'Noto Sans JP', sans-serif", color: C.text }}>
 
       {/* ヘッダー */}
-      <header style={{ background: C.self, color: '#fff', padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '0.05em' }}>患者の味方</span>
-          <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14 }}>|</span>
-          <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)' }}>クリニックダッシュボード</span>
+      <header style={{ background: C.self, color: '#fff', padding: '0 16px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {isMobile && (
+            <button onClick={() => setSideOpen(!sideOpen)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: 22, cursor: 'pointer', padding: 4 }}>☰</button>
+          )}
+          <span style={{ fontWeight: 700, fontSize: 14, letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>患者の味方</span>
+          {!isMobile && (
+            <>
+              <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14 }}>|</span>
+              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', whiteSpace: 'nowrap' }}>クリニックダッシュボード</span>
+            </>
+          )}
         </div>
-        <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: 13, fontWeight: 600 }}>立川北・なお矯正歯科クリニック ▼</div>
-          <div style={{ fontSize: 11, color: '#2ECC71' }}>✅ 透明性認証 取得済み</div>
+        <div style={{ textAlign: 'right', minWidth: 0 }}>
+          <div style={{ fontSize: isMobile ? 11 : 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>立川北・なお矯正歯科 ▼</div>
+          <div style={{ fontSize: 10, color: '#2ECC71' }}>✅ 透明性認証 取得済み</div>
         </div>
       </header>
 
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
 
-        {/* サイドナビ */}
-        <nav style={{ width: 220, background: '#fff', borderRight: '1px solid #E8ECF0', padding: '24px 0', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {[
-            { icon: '📊', label: 'ダッシュボード', active: true },
-            { icon: '💬', label: 'レビュー管理',   active: false },
-            { icon: '📈', label: '地域分析',       active: false },
-            { icon: '⚙️', label: '設定',           active: false },
-          ].map(item => (
-            <div key={item.label} style={{
-              display: 'flex', alignItems: 'center', gap: 10,
-              padding: '10px 20px', cursor: 'pointer',
-              background: item.active ? '#EAF2F8' : 'transparent',
-              color: item.active ? C.self : C.muted,
-              fontWeight: item.active ? 700 : 400, fontSize: 14,
-              borderLeft: item.active ? `3px solid ${C.self}` : '3px solid transparent',
+        {/* サイドナビ（モバイル:オーバーレイ、デスクトップ:固定） */}
+        {(isMobile ? sideOpen : true) && (
+          <>
+            {isMobile && <div onClick={() => setSideOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 199 }} />}
+            <nav style={{
+              width: isMobile ? 240 : 200, background: '#fff', borderRight: '1px solid #E8ECF0',
+              padding: '24px 0', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 4,
+              ...(isMobile ? { position: 'fixed', top: 56, left: 0, bottom: 0, zIndex: 200, boxShadow: '4px 0 16px rgba(0,0,0,0.1)' } : {}),
             }}>
-              <span>{item.icon}</span><span>{item.label}</span>
-            </div>
-          ))}
-        </nav>
+              {[
+                { icon: '📊', label: 'ダッシュボード', active: true },
+                { icon: '💬', label: 'レビュー管理',   active: false },
+                { icon: '📈', label: '地域分析',       active: false },
+                { icon: '⚙️', label: '設定',           active: false },
+              ].map(item => (
+                <div key={item.label} onClick={() => isMobile && setSideOpen(false)} style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 20px', cursor: 'pointer',
+                  background: item.active ? '#EAF2F8' : 'transparent',
+                  color: item.active ? C.self : C.muted,
+                  fontWeight: item.active ? 700 : 400, fontSize: 14,
+                  borderLeft: item.active ? `3px solid ${C.self}` : '3px solid transparent',
+                }}>
+                  <span>{item.icon}</span><span>{item.label}</span>
+                </div>
+              ))}
+            </nav>
+          </>
+        )}
 
         {/* メインコンテンツ */}
-        <main style={{ flex: 1, overflowY: 'auto', padding: '20px 28px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <main style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px 12px' : '20px 28px', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
           {/* デモバナー */}
           <div style={{ background: '#FEF9E7', border: '1px solid #F9E79F', borderRadius: 8, padding: '10px 16px', fontSize: 13, color: '#856404', fontWeight: 500 }}>
@@ -231,17 +292,19 @@ export default function Dashboard() {
           </div>
 
           {/* KPIカード */}
-          <div style={{ display: 'flex', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(3, 1fr)' : 'repeat(6, 1fr)', gap: 12 }}>
             <KpiCard icon="📊" label="透明性スコア"    value="4.1 / 5.0" sub="地域平均 3.7 より +0.4 ↑"  valueColor={C.good} />
             <KpiCard icon="📈" label="今月の閲覧数"    value="1,243"     sub="先月比 +18% ↑"              valueColor={C.self} />
             <KpiCard icon="💬" label="レビュー件数"    value="24件"      sub="今月 +3件"                  valueColor={C.self} />
             <KpiCard icon="⚠️" label="追加費用発生率"  value="18%"       sub="地域平均 38% より低い ↓"   valueColor={C.good} />
+            <KpiCard icon="💰" label="費用乖離率"      value="28%"       sub="エリア平均 38% より 10pt 低い ↓" valueColor={C.good} />
+            <KpiCard icon="⏱️" label="期間延長率"      value="35%"       sub="エリア平均 38% より 3pt 低い ↓"  valueColor={C.caution} />
           </div>
 
           {/* ============================================
               セクションC：スコア推移グラフ
           ============================================ */}
-          <div style={{ display: 'flex', gap: 16 }}>
+          <div style={{ display: 'flex', gap: 16, flexDirection: isMobile ? 'column' : 'row' }}>
 
             {/* 折れ線グラフ */}
             <div style={{ ...card, flex: 3 }}>
@@ -297,7 +360,7 @@ export default function Dashboard() {
           {/* ============================================
               セクションA：競合分析
           ============================================ */}
-          <div style={{ display: 'flex', gap: 16 }}>
+          <div style={{ display: 'flex', gap: 16, flexDirection: isMobile ? 'column' : 'row' }}>
 
             {/* レーダーチャート */}
             <div style={{ ...card, flex: 3 }}>
@@ -380,7 +443,7 @@ export default function Dashboard() {
             <div style={{ ...card, paddingBottom: 8 }}>
               <SectionHeader icon="📋" title="改善アクション" sub="優先度順・自動抽出" />
             </div>
-            <div style={{ display: 'flex', gap: 16, marginTop: 12 }}>
+            <div style={{ display: 'flex', gap: 16, marginTop: 12, flexDirection: isMobile ? 'column' : 'row' }}>
               {improvements.map((item, i) => {
                 const isDone = doneActions.includes(i);
                 return (
@@ -455,11 +518,132 @@ export default function Dashboard() {
           </div>
 
           {/* ============================================
+              セクション：費用ギャップ（比較グラフ＋大数字）
+          ============================================ */}
+          <div style={{ display: 'flex', gap: 16, flexDirection: isMobile ? 'column' : 'row' }}>
+            {/* 比較グラフ */}
+            <div style={{ ...card, flex: 3 }}>
+              <SectionHeader icon="💰" title="費用ギャップ" sub="説明時 vs 実際の支払（金額帯別件数）" />
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={costGapCompare} margin={{ top: 4, right: 16, bottom: 0, left: -10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" />
+                  <XAxis dataKey="range" tick={{ fontSize: 11, fill: C.muted }} />
+                  <YAxis tick={{ fontSize: 11, fill: C.muted }} allowDecimals={false} />
+                  <Tooltip contentStyle={{ fontSize: 12, borderRadius: 6 }} />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                  <Bar dataKey="説明時" fill={C.self} radius={[3, 3, 0, 0]} barSize={20} />
+                  <Bar dataKey="実際" fill={C.warning} radius={[3, 3, 0, 0]} barSize={20} />
+                </BarChart>
+              </ResponsiveContainer>
+              <div style={{ display: 'flex', gap: 12, marginTop: 8, justifyContent: 'center' }}>
+                <span style={{ fontSize: 11, color: C.muted, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ width: 12, height: 12, background: C.self, borderRadius: 2, display: 'inline-block' }} /> 説明時の分布
+                </span>
+                <span style={{ fontSize: 11, color: C.muted, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ width: 12, height: 12, background: C.warning, borderRadius: 2, display: 'inline-block' }} /> 実際の分布（100万以上に集中 → 増加傾向）
+                </span>
+              </div>
+            </div>
+
+            {/* 大数字カード */}
+            <div style={{ ...card, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', gap: 12 }}>
+              <div style={{ fontSize: 13, color: C.muted, fontWeight: 600 }}>費用が説明より増加した患者</div>
+              <div style={{ fontSize: 56, fontWeight: 800, color: C.warning, lineHeight: 1 }}>28<span style={{ fontSize: 28 }}>%</span></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#EAF6F0', padding: '6px 14px', borderRadius: 20 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: C.good }}>↓ エリア平均 38% より 10pt 低い</span>
+              </div>
+              <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.5, marginTop: 4 }}>
+                説明時の金額帯より実際の支払が<br />上のカテゴリになった回答の割合
+              </div>
+            </div>
+          </div>
+
+          {/* ============================================
+              セクション：治療期間ギャップ（比較グラフ＋大数字）
+          ============================================ */}
+          <div style={{ display: 'flex', gap: 16, flexDirection: isMobile ? 'column' : 'row' }}>
+            {/* 比較グラフ */}
+            <div style={{ ...card, flex: 3 }}>
+              <SectionHeader icon="⏱️" title="治療期間ギャップ" sub="説明時 vs 実際の期間（期間帯別件数）" />
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={durationGapCompare} margin={{ top: 4, right: 16, bottom: 0, left: -10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" />
+                  <XAxis dataKey="range" tick={{ fontSize: 11, fill: C.muted }} />
+                  <YAxis tick={{ fontSize: 11, fill: C.muted }} allowDecimals={false} />
+                  <Tooltip contentStyle={{ fontSize: 12, borderRadius: 6 }} />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                  <Bar dataKey="説明時" fill={C.self} radius={[3, 3, 0, 0]} barSize={20} />
+                  <Bar dataKey="実際" fill={C.caution} radius={[3, 3, 0, 0]} barSize={20} />
+                </BarChart>
+              </ResponsiveContainer>
+              <div style={{ display: 'flex', gap: 12, marginTop: 8, justifyContent: 'center' }}>
+                <span style={{ fontSize: 11, color: C.muted, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ width: 12, height: 12, background: C.self, borderRadius: 2, display: 'inline-block' }} /> 説明時の分布
+                </span>
+                <span style={{ fontSize: 11, color: C.muted, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ width: 12, height: 12, background: C.caution, borderRadius: 2, display: 'inline-block' }} /> 実際の分布（長期側にシフト）
+                </span>
+              </div>
+            </div>
+
+            {/* 大数字カード */}
+            <div style={{ ...card, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', gap: 12 }}>
+              <div style={{ fontSize: 13, color: C.muted, fontWeight: 600 }}>治療期間が説明より延びた患者</div>
+              <div style={{ fontSize: 56, fontWeight: 800, color: C.caution, lineHeight: 1 }}>35<span style={{ fontSize: 28 }}>%</span></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#EAF6F0', padding: '6px 14px', borderRadius: 20 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: C.good }}>↓ エリア平均 38% より 3pt 低い</span>
+              </div>
+              <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.5, marginTop: 4 }}>
+                説明時の期間帯より実際が<br />長くなった回答の割合
+              </div>
+            </div>
+          </div>
+
+          {/* ============================================
+              セクション：治療体験指標
+          ============================================ */}
+          <div style={{ display: 'flex', gap: 16, flexDirection: isMobile ? 'column' : 'row' }}>
+            <div style={{ ...card, flex: 1 }}>
+              <SectionHeader icon="😣" title="痛みレベル" sub="治療中・完了者 n=18" />
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={painData} margin={{ top: 4, right: 16, bottom: 0, left: -10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" />
+                  <XAxis dataKey="level" tick={{ fontSize: 11, fill: C.muted }} />
+                  <YAxis tick={{ fontSize: 11, fill: C.muted }} allowDecimals={false} />
+                  <Tooltip contentStyle={{ fontSize: 12, borderRadius: 6 }} />
+                  <Bar dataKey="件数" radius={[3, 3, 0, 0]} barSize={32}>
+                    {painData.map((entry, idx) => (
+                      <Cell key={idx} fill={idx <= 1 ? C.good : idx === 2 ? C.caution : C.warning} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div style={{ ...card, flex: 1 }}>
+              <SectionHeader icon="😊" title="仕上がり満足度" sub="治療完了者 n=14" />
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={satisfactionResultData} margin={{ top: 4, right: 16, bottom: 0, left: -10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" />
+                  <XAxis dataKey="level" tick={{ fontSize: 11, fill: C.muted }} />
+                  <YAxis tick={{ fontSize: 11, fill: C.muted }} allowDecimals={false} />
+                  <Tooltip contentStyle={{ fontSize: 12, borderRadius: 6 }} />
+                  <Bar dataKey="件数" radius={[3, 3, 0, 0]} barSize={32}>
+                    {satisfactionResultData.map((entry, idx) => (
+                      <Cell key={idx} fill={idx <= 1 ? C.good : idx === 2 ? C.caution : C.warning} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* ============================================
               セクション：自院 vs エリア平均 差分グラフ
           ============================================ */}
           <div style={card}>
-            <SectionHeader icon="📊" title="競合との差分" sub="自院スコア − エリア平均（項目別）" />
-            <ResponsiveContainer width="100%" height={260}>
+            <SectionHeader icon="📊" title="競合との差分" sub="自院 − エリア平均（透明性・費用・期間）" />
+            <ResponsiveContainer width="100%" height={320}>
               <BarChart data={gapData} layout="vertical" margin={{ top: 4, right: 30, bottom: 0, left: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" horizontal={false} />
                 <XAxis

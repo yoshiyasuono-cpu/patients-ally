@@ -11,14 +11,14 @@ export default function Header({ showBack = false, backTo = '/', title }) {
             </svg>
           </Link>
         ) : null}
-        <Link to="/" className="flex items-center gap-2 flex-1">
+        <Link to="/" className="flex items-center gap-2 flex-shrink min-w-0">
           <div className="w-8 h-8 bg-teal-700 rounded-lg flex items-center justify-center flex-shrink-0">
             <span className="text-white text-xs font-bold">患</span>
           </div>
           {!showBack && (
-            <div>
-              <div className="text-teal-800 font-bold text-base leading-tight">患者の味方</div>
-              <div className="text-gray-500 text-[10px] leading-tight">中立・第三者の矯正歯科ナビ</div>
+            <div className="min-w-0">
+              <div className="text-teal-800 font-bold text-base leading-tight whitespace-nowrap">患者の味方</div>
+              <div className="text-gray-500 text-[10px] leading-tight hidden sm:block">中立・第三者の矯正歯科ナビ</div>
             </div>
           )}
           {showBack && title && (
@@ -28,10 +28,10 @@ export default function Header({ showBack = false, backTo = '/', title }) {
         {/* ナビリンク（トップページのみ表示） */}
         {!showBack && (
           <nav className="flex items-center gap-4">
-            <Link to="/for-clinics" className="text-gray-500 text-sm hover:text-teal-700 transition-colors whitespace-nowrap">
+            <Link to="/for-clinics" className="text-gray-500 text-xs sm:text-sm hover:text-teal-700 transition-colors whitespace-nowrap">
               クリニックの方へ
             </Link>
-            <Link to="/policy" className="text-gray-500 text-sm hover:text-teal-700 transition-colors whitespace-nowrap">
+            <Link to="/policy" className="text-gray-500 text-xs sm:text-sm hover:text-teal-700 transition-colors whitespace-nowrap">
               掲載基準
             </Link>
           </nav>

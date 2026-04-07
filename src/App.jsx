@@ -13,6 +13,7 @@ import ClinicsSearch from './pages/ClinicsSearch';
 import ClinicsCompare from './pages/ClinicsCompare';
 import ClinicDemoDetail from './pages/ClinicDemoDetail';
 import Dashboard from './pages/Dashboard';
+import AiChat from './pages/AiChat';
 import './index.css';
 
 function ScrollToTop() {
@@ -41,6 +42,7 @@ export default function App() {
         <Route path="/clinics/compare" element={<ClinicsCompare />} />
         <Route path="/clinics/:id" element={<ClinicDemoDetail />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/chat" element={<AiChat />} />
       </Routes>
     </BrowserRouter>
   );

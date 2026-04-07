@@ -49,8 +49,8 @@ function barColor(v) {
 // 比較デモデータ
 const DEMO_CARDS = [
   {
-    name: '立川北・なお矯正歯科',
-    area: '立川市',
+    name: 'みなと矯正歯科クリニック',
+    area: '港区',
     sub: 'ワイヤー・マウスピース',
     score: 82,
     scoreBg: '#1a9e75',
@@ -64,7 +64,7 @@ const DEMO_CARDS = [
     verified: true,
   },
   {
-    name: '渋谷スマイル矯正歯科',
+    name: 'さくら矯正歯科',
     area: '渋谷区',
     sub: 'ワイヤー・マウスピース',
     score: 71,
@@ -79,7 +79,7 @@ const DEMO_CARDS = [
     verified: false,
   },
   {
-    name: '新宿矯正歯科クリニック',
+    name: 'あおば矯正歯科',
     area: '新宿区',
     sub: 'マウスピース専門',
     score: null,
@@ -128,6 +128,7 @@ export default function ClinicList() {
   const [budget, setBudget] = useState('指定なし');
   const [filter, setFilter] = useState('すべて');
   const [showCompany, setShowCompany] = useState(false);
+  const [displayCount, setDisplayCount] = useState(20);
 
   useEffect(() => {
     supabase
@@ -174,6 +175,11 @@ export default function ClinicList() {
     return matchSearch && matchArea && matchFilter && matchBudget;
   });
 
+  // フィルター変更時に表示件数をリセット
+  useEffect(() => {
+    setDisplayCount(20);
+  }, [search, area, budget, filter]);
+
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: S.pageBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: S.font }}>
@@ -191,30 +197,31 @@ export default function ClinicList() {
         background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(8px)',
         borderBottom: `1px solid ${S.border}`,
       }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 16px', height: 52, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
           {/* ロゴ */}
-          <a href="/" style={{ textDecoration: 'none', fontSize: 20, fontWeight: 700, letterSpacing: '0.01em' }}>
+          <a href="/" style={{ textDecoration: 'none', fontSize: 18, fontWeight: 700, letterSpacing: '0.01em', whiteSpace: 'nowrap', flexShrink: 0 }}>
             <span style={{ color: S.navy }}>Clinic</span>
             <span style={{ color: S.teal }}>Compass</span>
           </a>
-          {/* 中央リンク */}
-          <div style={{ display: 'flex', gap: 28, alignItems: 'center' }}>
-            <a href="#clinics" style={{ color: S.muted, textDecoration: 'none', fontSize: 13, fontWeight: 500 }}>クリニックを探す</a>
-            <a href="https://medbase.jp/#problems" target="_blank" rel="noopener noreferrer" style={{ color: S.muted, textDecoration: 'none', fontSize: 13, fontWeight: 500 }}>比較の仕組み</a>
-            <a href="https://kyoseidatalab.jp" target="_blank" rel="noopener noreferrer" style={{ color: S.muted, textDecoration: 'none', fontSize: 13, fontWeight: 500 }}>データラボ</a>
+          {/* 中央リンク（モバイルでは非表示） */}
+          <div className="hidden md:flex" style={{ gap: 24, alignItems: 'center' }}>
+            <a href="#clinics" style={{ color: S.muted, textDecoration: 'none', fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap' }}>クリニックを探す</a>
+            <a href="https://medbase.jp/#problems" target="_blank" rel="noopener noreferrer" style={{ color: S.muted, textDecoration: 'none', fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap' }}>比較の仕組み</a>
+            <a href="https://kyoseidatalab.jp" target="_blank" rel="noopener noreferrer" style={{ color: S.muted, textDecoration: 'none', fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap' }}>データラボ</a>
+            <a href="/chat" style={{ color: S.muted, textDecoration: 'none', fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap' }}>AIに矯正相談</a>
           </div>
           {/* 右ボタン */}
-          <a href="https://kyoseidatalab.jp/survey/" target="_blank" rel="noopener noreferrer" style={{
-            background: S.navy, color: '#fff', fontSize: 12, fontWeight: 700,
-            padding: '8px 18px', borderRadius: 6, textDecoration: 'none',
-          }}>アンケートに協力する</a>
+          <a href="/survey" style={{
+            background: S.navy, color: '#fff', fontSize: 11, fontWeight: 700,
+            padding: '7px 14px', borderRadius: 6, textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0,
+          }}>アンケートに協力</a>
         </div>
       </nav>
 
       {/* ============ ヒーロー ============ */}
       <section style={{
         background: `linear-gradient(135deg, ${S.heroBg1} 0%, ${S.heroBg2} 100%)`,
-        padding: '64px 24px 56px', textAlign: 'center',
+        padding: '48px 20px 40px', textAlign: 'center',
       }}>
         <div style={{ maxWidth: 800, margin: '0 auto' }}>
           {/* バッジ */}
@@ -265,22 +272,22 @@ export default function ClinicList() {
             ))}
           </div>
 
-          {/* CTA 3本 */}
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+          {/* CTA 3本（モバイル縦並び） */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <a href="#clinics" style={{
               background: S.teal, color: '#fff', fontSize: 14, fontWeight: 700,
-              padding: '14px 28px', borderRadius: 8, textDecoration: 'none',
-              border: 'none',
+              padding: '12px 28px', borderRadius: 8, textDecoration: 'none',
+              border: 'none', whiteSpace: 'nowrap',
             }}>クリニックを探す</a>
-            <a href="https://kyoseidatalab.jp/survey/" target="_blank" rel="noopener noreferrer" style={{
-              background: 'transparent', color: S.accent, fontSize: 14, fontWeight: 600,
-              padding: '14px 28px', borderRadius: 8, textDecoration: 'none',
-              border: `1.5px solid ${S.accent}`,
+            <a href="/survey" style={{
+              background: 'transparent', color: S.accent, fontSize: 13, fontWeight: 600,
+              padding: '10px 24px', borderRadius: 8, textDecoration: 'none',
+              border: `1.5px solid ${S.accent}`, whiteSpace: 'nowrap',
             }}>アンケートに協力する</a>
             <a href="https://medbase.jp/#problems" target="_blank" rel="noopener noreferrer" style={{
-              background: 'transparent', color: 'rgba(255,255,255,0.8)', fontSize: 14, fontWeight: 500,
-              padding: '14px 28px', borderRadius: 8, textDecoration: 'none',
-              border: '1.5px solid rgba(255,255,255,0.25)',
+              background: 'transparent', color: 'rgba(255,255,255,0.8)', fontSize: 13, fontWeight: 500,
+              padding: '10px 24px', borderRadius: 8, textDecoration: 'none',
+              border: '1.5px solid rgba(255,255,255,0.25)', whiteSpace: 'nowrap',
             }}>比較の仕組みを見る</a>
           </div>
         </div>
@@ -321,8 +328,8 @@ export default function ClinicList() {
             <span style={{ marginLeft: 'auto', fontSize: 11, color: '#b0bec5' }}>透明性スコアや比較順位は課金で変わりません</span>
           </div>
 
-          {/* 比較カード3枚 */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+          {/* 比較カード3枚（モバイルは縦並び） */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {DEMO_CARDS.map((card, ci) => {
               const nl = nLabel(card.n);
               const isBlank = card.score === null;
@@ -408,7 +415,7 @@ export default function ClinicList() {
                 background: S.teal, color: '#fff', fontSize: 13, fontWeight: 700,
                 padding: '12px 24px', borderRadius: 8, textDecoration: 'none', border: 'none',
               }}>クリニックを探す</a>
-              <a href="https://kyoseidatalab.jp/survey/" target="_blank" rel="noopener noreferrer" style={{
+              <a href="/survey" style={{
                 background: 'transparent', color: S.accent, fontSize: 13, fontWeight: 600,
                 padding: '12px 24px', borderRadius: 8, textDecoration: 'none',
                 border: `1.5px solid ${S.accent}`,
@@ -437,6 +444,40 @@ export default function ClinicList() {
               fontFamily: S.font,
             }}
           />
+        </div>
+
+        {/* 人気エリアから探す */}
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 12, color: S.muted, marginBottom: 8, fontWeight: 600 }}>人気エリアから探す</div>
+          {/* 23区 */}
+          <div style={{ display: 'flex', gap: 6, overflowX: 'auto', marginBottom: 6, paddingBottom: 2 }}>
+            {['港区', '渋谷区', '新宿区', '中央区', '千代田区', '目黒区', '世田谷区', '豊島区', '品川区', '文京区'].map(c => (
+              <button key={c} onClick={() => setArea(area === c ? 'すべて' : c)} style={{
+                flexShrink: 0, fontSize: 12, padding: '6px 14px', borderRadius: 20,
+                background: area === c ? S.teal : '#fff',
+                color: area === c ? '#fff' : '#64748b',
+                border: `1px solid ${area === c ? S.teal : S.border}`,
+                cursor: 'pointer', fontWeight: area === c ? 700 : 400, fontFamily: S.font,
+              }}>{c}</button>
+            ))}
+          </div>
+          {/* 23区外 */}
+          <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2 }}>
+            {[
+              { label: '立川市', value: '立川市' },
+              { label: '吉祥寺', value: '武蔵野市' },
+              { label: '八王子市', value: '八王子市' },
+              { label: '町田市', value: '町田市' },
+            ].map(c => (
+              <button key={c.value} onClick={() => setArea(area === c.value ? 'すべて' : c.value)} style={{
+                flexShrink: 0, fontSize: 12, padding: '6px 14px', borderRadius: 20,
+                background: area === c.value ? S.teal : '#fff',
+                color: area === c.value ? '#fff' : '#64748b',
+                border: `1px solid ${area === c.value ? S.teal : S.border}`,
+                cursor: 'pointer', fontWeight: area === c.value ? 700 : 400, fontFamily: S.font,
+              }}>{c.label}</button>
+            ))}
+          </div>
         </div>
 
         {/* フィルター */}
@@ -490,7 +531,7 @@ export default function ClinicList() {
               条件に合うクリニックが見つかりませんでした
             </div>
           ) : (
-            filtered.map((clinic) => (
+            filtered.slice(0, displayCount).map((clinic) => (
               <Link to={`/clinic/${clinic.id}`} key={clinic.id} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div style={{
                   background: S.cardBg, borderRadius: 12, border: `1.5px solid ${S.border}`,
@@ -542,6 +583,22 @@ export default function ClinicList() {
             ))
           )}
         </div>
+
+        {/* もっと見るボタン */}
+        {filtered.length > displayCount && (
+          <div style={{ textAlign: 'center', marginTop: 24 }}>
+            <button
+              onClick={() => setDisplayCount(prev => prev + 20)}
+              style={{
+                background: '#fff', color: S.teal, fontSize: 14, fontWeight: 700,
+                padding: '14px 36px', borderRadius: 10,
+                border: `1.5px solid ${S.teal}`, cursor: 'pointer', fontFamily: S.font,
+              }}
+            >
+              もっと見る（残り{filtered.length - displayCount}件）
+            </button>
+          </div>
+        )}
       </section>
 
       {/* ============ MedBaseエコシステム共通フッター ============ */}
