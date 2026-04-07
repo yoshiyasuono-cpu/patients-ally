@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { mapFromDb } from '../lib/seedClinics';
 
-const FILTERS = ['すべて', 'ワイヤー矯正', 'マウスピース矯正'];
+const FILTERS = ['すべて', 'ワイヤー矯正', 'マウスピース矯正', '裏側矯正', '部分矯正', '小児矯正', '無料相談あり', '土日祝診療', '夜間診療', '認定医在籍', 'トータルフィー制'];
 
 // エリアグループ定義
 const AREA_GROUPS = {
@@ -161,7 +161,15 @@ export default function ClinicList() {
     const matchFilter =
       filter === 'すべて' ||
       (filter === 'ワイヤー矯正' && c.wireAvailable) ||
-      (filter === 'マウスピース矯正' && c.invisalignAvailable);
+      (filter === 'マウスピース矯正' && c.invisalignAvailable) ||
+      (filter === '裏側矯正' && c.lingualAvailable) ||
+      (filter === '部分矯正' && c.partialAvailable) ||
+      (filter === '小児矯正' && c.kidsAvailable) ||
+      (filter === '無料相談あり' && c.freeConsultation) ||
+      (filter === '土日祝診療' && c.weekendHoliday) ||
+      (filter === '夜間診療' && c.nightClinic) ||
+      (filter === '認定医在籍' && c.certifiedDoctor) ||
+      (filter === 'トータルフィー制' && c.totalFeeSystem);
     const matchBudget = (() => {
       if (budget === '指定なし') return true;
       const minPrice = c.feeMin;
@@ -565,9 +573,17 @@ export default function ClinicList() {
                         )) : (
                           <span style={{ fontSize: 10, color: S.muted }}>対応治療：情報収集中</span>
                         )}
-                        {clinic.totalFee && (
+                        {clinic.totalFeeSystem && (
                           <span style={{ fontSize: 10, background: '#f0fdfa', color: S.teal, padding: '2px 8px', borderRadius: 12, border: '1px solid #ccfbf1' }}>トータルフィー制</span>
                         )}
+                      </div>
+                      {/* 診療情報バッジ */}
+                      <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap', marginBottom: 4 }}>
+                        {clinic.freeConsultation && <span style={{ fontSize: 9, color: '#0d9488', background: '#f0fdfa', padding: '1px 6px', borderRadius: 8 }}>無料相談</span>}
+                        {clinic.weekendHoliday && <span style={{ fontSize: 9, color: '#0d9488', background: '#f0fdfa', padding: '1px 6px', borderRadius: 8 }}>土日祝</span>}
+                        {clinic.nightClinic && <span style={{ fontSize: 9, color: '#0d9488', background: '#f0fdfa', padding: '1px 6px', borderRadius: 8 }}>夜間</span>}
+                        {clinic.certifiedDoctor && <span style={{ fontSize: 9, color: '#7c3aed', background: '#f5f3ff', padding: '1px 6px', borderRadius: 8 }}>認定医</span>}
+                        {clinic.dentalLoan && <span style={{ fontSize: 9, color: '#64748b', background: '#f1f5f9', padding: '1px 6px', borderRadius: 8 }}>ローン可</span>}
                       </div>
                       <div style={{ fontSize: 11, color: S.muted }}>{clinic.station || clinic.address}</div>
                     </div>
