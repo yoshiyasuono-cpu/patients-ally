@@ -13,12 +13,12 @@ export default function Header({ showBack = false, backTo = '/', title }) {
         ) : null}
         <Link to="/" className="flex items-center gap-2 flex-shrink min-w-0">
           <div className="w-8 h-8 bg-teal-700 rounded-lg flex items-center justify-center flex-shrink-0">
-            <span className="text-white text-xs font-bold">患</span>
+            <span className="text-white text-xs font-bold">CC</span>
           </div>
           {!showBack && (
             <div className="min-w-0">
-              <div className="text-teal-800 font-bold text-base leading-tight whitespace-nowrap">患者の味方</div>
-              <div className="text-gray-500 text-[10px] leading-tight hidden sm:block">中立・第三者の矯正歯科ナビ</div>
+              <div className="text-teal-800 font-bold text-base leading-tight whitespace-nowrap">ClinicCompass</div>
+              <div className="text-gray-500 text-[10px] leading-tight hidden sm:block">矯正歯科の透明性比較サイト</div>
             </div>
           )}
           {showBack && title && (

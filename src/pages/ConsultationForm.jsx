@@ -78,7 +78,7 @@ export default function ConsultationForm() {
             <span className="text-white font-bold text-sm">完全無料・強引な勧誘は一切ありません</span>
           </div>
           <p className="text-teal-200 text-xs leading-relaxed">
-            「患者の味方」は第三者の立場でご相談を受け付けています。クリニックへの紹介料はクリニック側からのみいただくため、患者さまへの費用は0円です。
+            「ClinicCompass」は第三者の立場でご相談を受け付けています。クリニックへの紹介料はクリニック側からのみいただくため、患者さまへの費用は0円です。
           </p>
         </div>
 

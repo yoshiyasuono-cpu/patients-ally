@@ -62,7 +62,7 @@ export default function Policy() {
         {/* ブランドメッセージ */}
         <div className="text-center text-gray-600 text-base sm:text-lg leading-relaxed mb-10 max-w-2xl mx-auto">
           <p>
-            患者の味方は、感情的な「良かった・悪かった」よりも、
+            ClinicCompassは、感情的な「良かった・悪かった」よりも、
             <br className="hidden sm:inline" />
             比較に役立つ事実情報を大切にしています。
           </p>
@@ -81,7 +81,7 @@ export default function Policy() {
             第0条：本書の目的
           </h3>
           <p className="text-gray-700 text-base leading-relaxed">
-            患者の味方は、矯正歯科を検討する患者が、広告色の強い情報や印象論だけに頼らず、比較可能な事実情報に基づいて意思決定できる環境を整えることを目的とします。本サービスは、特定の医療機関への誘引を目的とした広告媒体ではなく、患者の比較検討を支援する情報基盤であることを基本姿勢とします。
+            ClinicCompassは、矯正歯科を検討する患者が、広告色の強い情報や印象論だけに頼らず、比較可能な事実情報に基づいて意思決定できる環境を整えることを目的とします。本サービスは、特定の医療機関への誘引を目的とした広告媒体ではなく、患者の比較検討を支援する情報基盤であることを基本姿勢とします。
           </p>
         </div>
 
@@ -235,7 +235,7 @@ export default function Policy() {
         <Section title="第II部：中立性ポリシー">
           <Article number={13} title="基本宣言">
             <p>
-              患者の味方は、患者の比較検討を支援する立場を優先し、広告主又は医療機関の意向から独立して判断を行う。
+              ClinicCompassは、患者の比較検討を支援する立場を優先し、広告主又は医療機関の意向から独立して判断を行う。
             </p>
           </Article>
 
@@ -294,7 +294,7 @@ export default function Policy() {
 
           <Article number={20} title="サービスの立ち位置">
             <p>
-              患者の味方は医療行為を行う者ではなく、診断・治療の決定主体でもない。掲載情報は患者の検討補助を目的とし、最終的な医療判断・契約判断は患者自身が行うものとする。
+              ClinicCompassは医療行為を行う者ではなく、診断・治療の決定主体でもない。掲載情報は患者の検討補助を目的とし、最終的な医療判断・契約判断は患者自身が行うものとする。
             </p>
           </Article>
         </Section>

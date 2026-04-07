@@ -54,7 +54,7 @@ function BadgeCertified({ children }) {
 function BadgeReviewed() {
   return (
     <span className="inline-flex items-center gap-1 bg-blue-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-      ✓ 患者の味方 審査済み
+      ✓ ClinicCompass 審査済み
     </span>
   );
 }
@@ -297,7 +297,7 @@ export default function ClinicDemoDetail() {
           <p className="font-semibold text-gray-700 mb-2">📋 このページの情報について</p>
           <ul className="space-y-1">
             <li>・料金情報は医院公式サイトをもとに構造化しています。</li>
-            <li>・レビュースコアは患者の味方の独自調査に基づきます。</li>
+            <li>・レビュースコアはClinicCompassの独自調査に基づきます。</li>
             <li>・医院からの広告費は一切受け取っていません。</li>
             <li>・情報の誤りは <span className="text-blue-700 underline cursor-pointer">修正申請</span> から</li>
           </ul>

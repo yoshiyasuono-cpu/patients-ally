@@ -237,7 +237,7 @@ export default function Dashboard() {
           {isMobile && (
             <button onClick={() => setSideOpen(!sideOpen)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: 22, cursor: 'pointer', padding: 4 }}>☰</button>
           )}
-          <span style={{ fontWeight: 700, fontSize: 14, letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>患者の味方</span>
+          <span style={{ fontWeight: 700, fontSize: 14, letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>ClinicCompass</span>
           {!isMobile && (
             <>
               <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14 }}>|</span>

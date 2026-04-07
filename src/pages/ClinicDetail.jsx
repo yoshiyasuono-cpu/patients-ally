@@ -307,7 +307,7 @@ export default function ClinicDetail() {
           {reviews.length === 0 ? (
             <div className="p-4 bg-gray-50 rounded-xl text-center">
               <p className="text-gray-400 text-sm">口コミ情報を収集中です</p>
-              <p className="text-gray-400 text-xs mt-1">投稿情報が集まり次第、患者の味方スコアを算出します</p>
+              <p className="text-gray-400 text-xs mt-1">投稿情報が集まり次第、ClinicCompassスコアを算出します</p>
             </div>
           ) : (
             <div className="space-y-4">

@@ -51,7 +51,7 @@ function SimulatorTab() {
     <div className="space-y-4">
       <div className="p-3 bg-teal-50 rounded-xl border border-teal-100">
         <p className="text-teal-700 text-xs leading-relaxed">
-          「患者の味方」経由で成約した場合の紹介料をシミュレーションできます。費用はクリニック負担（成果報酬型）で、患者さまへの請求は一切ありません。
+          「ClinicCompass」経由で成約した場合の紹介料をシミュレーションできます。費用はクリニック負担（成果報酬型）で、患者さまへの請求は一切ありません。
         </p>
       </div>
 
@@ -156,10 +156,10 @@ export default function ClinicAdmin() {
         <div className="max-w-[430px] mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 bg-teal-600 rounded flex items-center justify-center">
-              <span className="text-white text-[10px] font-bold">患</span>
+              <span className="text-white text-[10px] font-bold">CC</span>
             </div>
             <div>
-              <div className="text-xs font-bold">患者の味方 管理画面</div>
+              <div className="text-xs font-bold">ClinicCompass 管理画面</div>
               <div className="text-gray-400 text-[10px]">{clinic.name}</div>
             </div>
           </div>
@@ -257,7 +257,7 @@ export default function ClinicAdmin() {
 
             {/* Tips */}
             <div className="bg-teal-50 border border-teal-100 rounded-xl p-4">
-              <h3 className="text-teal-700 font-bold text-sm mb-2">💡 患者の味方 活用Tips</h3>
+              <h3 className="text-teal-700 font-bold text-sm mb-2">💡 ClinicCompass 活用Tips</h3>
               <ul className="space-y-1.5">
                 {[
                   '投稿情報への返信は成約率向上に効果的です',

@@ -14,7 +14,7 @@ export default function ForClinics() {
           クリニックの皆様へ
         </h1>
         <p className="text-gray-600 text-base leading-relaxed mb-10">
-          患者の味方は、患者さんの矯正歯科選びを支援する情報サービスです。<br />
+          ClinicCompassは、患者さんの矯正歯科選びを支援する情報サービスです。<br />
           特定の医院を有利にする広告媒体ではなく、<br />
           比較可能な事実情報を整理して患者さんに届けることを目的としています。
         </p>
